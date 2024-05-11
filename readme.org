@@ -1,0 +1,9 @@
+* Welcome to vim9org
+
+  It is a new attempt to make orgmode usable in vim, kind of agenda
+  management or writing other documents. In this case, is using vim9script
+  to make it a little bit faster.
+
+* TODO
+
+  Add Description
