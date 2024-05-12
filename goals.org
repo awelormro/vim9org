@@ -1,0 +1,144 @@
+* Main tasks to bring
+   - Syntax
+   - Folding 
+   - Code nesting, exporting   
+
+* Elegant Markup
+Example basic Org document showing the key textual elements
+Org mode is routinely used to build and manage complex workflows. It does this using an elegantly simple syntax that scales from basic markup to full LaTeX typesetting and from plain text notes to literate programs.
+
+Everything you need to get started is demonstrated in the example.
+
+More on markup (manual)
+
+Structured Editing
+Demonstration of folding and unfolding sections in Org
+The fundamental structure of an Org document is a tree, with nested, collapsible sections forming its backbone. You can fold and unfold whole trees with single keystroke — tab.
+
+Org's trees make for quick, graceful navigation and powerful information hiding that lets you focus on the task at hand without compromising the ability to get the information you need complete it.
+
+Controlling section visibility is only a tiny part of Org's set of tools and commands for structured editing of plain text. Org mode leverages Org's regular syntax to transform otherwise tedious tasks into single key commands, freeing you to focus on content rather than form.
+
+More on document structure (manual)
+
+* Transparent Tables
+Manipulating tables with Org, moving cells/rows and executing formulas
+Org includes a powerful table editor.
+
+tab moves between columns. return moves between rows.
+
+Layout updates automatically as cell contents change.
+
+Import tables from .csv and .tsv files, or directly from the contents of the current buffer, then export them to any format supported by Org.
+
+Org tables aren't just static views of data. They can be used as a full spreadsheet system, with formulas, references and more — all with the simplicity and transparency of plain text.
+
+The built-in table editor (manual)
+
+Org as a spreadsheet system (manual)
+
+Introduction to editing tables (Worg)
+
+Using Org as a spreadsheet (Worg)
+
+Superior Source Code
+Demonstration of Org Babel executing code blocks
+Org provides functionality far beyond that of computational notebooks such as Jupyter or R Markdown.
+
+Org babel transforms the lowly executable source block into a complete literate programming environment, allowing you to weave the inputs and outputs of multiple languages and runtime environments across multiple machines into a single unified system, empowering you to achieve new levels of DRYness regardless of whether the languages you are working in want you to or not.
+
+Org makes it trivial to extract source code and generate documentation from the same file. While many languages have support for generating developer documentation from code comments, with Org your developer guide and user manual can also be the source code for implementation and testing — a single source of truth that won't drift out of sync.
+
+Org currently has support for over 80 languages, and projects like emacs-jupyter make it possible to leverage the Jupyter kernel ecosystem for even more languages.
+
+* Working with source code (manual)
+
+* List of supported languages (Worg)
+
+Export and Publish
+Showing an Org file being exported to HTML, markdown, PDF and plaintext
+Org is an authoring and publishing tool — it can function as everything from a static site generator, to a suite of tools for self-publishing.
+
+Draft documents using Org's intuitive markup, then export to your format of choice. Org supports many formats including:
+
+HTML
+ODT
+and more!
+Developers can easily create new backends for their favorite format (see the ox reference documentation) and Org is also supported by Pandoc.
+
+In addition to exporting single files, you can define publishing projects for one or more .org files and accompanying resources, targeting one or more publication backends.
+
+One poorly kept secret is that the Org website is written in Org!
+
+More on markup (manual)
+
+More on exporting (manual)
+
+More on publishing (manual)
+
+Tutorial on publishing to HTML (Worg)
+
+Tutorial on publishing to 
+ (Worg)
+
+* Take Control of Tasks
+Demonstration of planning with org, managing a scheduled todo list
+Org is an extremely capable task planner, time tracker and TODO list.
+
+Any section can become a TODO item by adding a keyword such as TODO or HOLD to track the state of the task. You can cycle through task states with the shortcuts S-<left> and S-<right>.
+
+Need add your own set of states? No problem. Org lets you customize them to support your workflow.
+
+Org Agenda makes it easy to view tasks from multiple files in one place. All you have to do is add one of the TODO keywords. Org has built-in support for task priority, deadlines, scheduled tasks, tags, clocking and more. Agenda can use of all of it to organize and prioritize tasks — seamlessly scaling from a simple TODO list into a complete project management suite, all with plain text markup.
+
+More on TODO items (manual)
+
+Handling dates and times (manual)
+
+* Actionable Agendas
+An example Org agenda, displaying various todo keywords, priorities, categorisation and scheduling
+Plan your day, your way, with ease.
+
+With agenda views — reports generated from your TODO items — you can see your tasks on a daily, weekly and monthly basis.
+
+Even with hundreds of .org files and thousands of tasks, agenda lets you focus on what you need to do and quickly take action, jumping from the high level overview directly into the task at hand.
+
+The default agenda shows scheduled and deadlined tasks for the week, stalled projects and all your outstanding TODO items.
+
+Not satisfied with the defaults? Org agenda is highly configurable. You can customize the contents of default views or create your own custom views.
+
+In a sense Org is an expressive language that captures the key points of interaction in workflows, simplifying and refining the process of developing new workflows as they emerge during the course of work, play, or life in general.
+
+More on agenda views (manual)
+
+Tutorial on agenda commands (Worg)
+
+* Clocking
+Using Org to keep track of how long various subtasks took
+Keep track of the time you spend on your tasks with Org Clocking, and at end of the day you can generate customized reports about how you spent your time.
+
+Org provides shortcuts to clock in and clock out of tasks. When working in an .org file C-c C-x C-i clocks in and C-c C-x C-o clocks out. Time is stored in the property drawer of the heading for the task at had.
+
+You can also use I and O when in an agenda view.
+
+More on clocking tasks (manual)
+
+Capture Data From Anywhere
+Using Org Capture to record an idea while editing a file
+You can add content to an .org file by capturing data.
+
+You can capture from anywhere — from an Emacs buffer or from other applications like your web browser, PDF viewer and more.
+
+Capture templates provide a quick and effective way to ingest structured data for a variety of workflows, from adding TODO items to quoting the relevant section of a manual or saving a receipt.
+
+More on capturing (manual)
+
+* Extremely Extensible
+Display of some default and custom Org link types
+Org mode isn't just extensible, it is Emacs extensible.
+
+Org started out as an extension. As a result, extensibility is present in nearly every aspect of Org.
+
+To give only a single example, consider hyperlinks. While updating documentation you find yourself repeatedly linking to GitHub issues. In Org you can add a new issue: link type to the document so that [[issue:74][big bug]] expands to https://github.com/author/repo/issues/74.
+
+Beyond expanding links, you can define custom resolving functions, link to files on remote machines with Tramp, and more.

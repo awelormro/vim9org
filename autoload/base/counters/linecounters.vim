@@ -1,28 +1,76 @@
 vim9script
-
-# getcurpos   [0, lnum, col, off, curswant] ~
-export def CountLinesUpIf(smbol: list<any>, brk: list<any>, pos: list<any>): number
+# vim: set fdm=marker:
+# vim: set nospell:
+# Description: All the functions here are made to count lines with
+# determinate symbols, characteristics or similar, they are to count until a
+# condition is determinate, until find a symbol or condition in line, and has
+# a lock to check if there are valid to get the number of line in case of
+# every kind of position
+# VimFuncsToCheck: {{{ 
+# getcurpos:  {{{
+# Get the position of the cursor.  This is like getpos('.'), but
+# includes an extra "curswant" item in the list:
+#     [0, lnum, col, off, curswant] 
+# }}}
+# }}}
+export def ListCheckCondsLine(smbol: list<any>, ln: number): number # {{{
+  for sym in smbol
+    if getline( ln ) =~ smbol
+      return 1
+    endif
+  endfor
+  return 0
+enddef # }}}
+export def CountLinesUpIf(smbol: list<any>, brk: list<any>, pos: list<any>): number # {{{ 
   var i = pos[1]
-  while i <= 0
-    for sym in smbol
-      if getline( i ) =~ sym
-        i -= 1
-        break
-      endif
-    endfor
+  while i >= 0
+    if ListCheckCondsLine(smbol, i) == 1 && ListCheckCondsLine(brk, i) == 0
+      i -= 1
+    else
+      return i
+    endif
   endwhile
   echo i
   return i
-enddef
-export def CountLinesDownNt(smbol: list<any>, brk: list<any>): number
+enddef # }}}
+export def CountLinesDownIf(smbol: list<any>, brk: list<any>, pos: list<any>): number # {{{
+  var i = pos[1]
+  var nd = line( '$' )
+  while i <= nd
+    if ListCheckCondsLine(smbol, i) == 1 && ListCheckCondsLine(brk, i) == 0
+      i += 1
+    else
+      return i
+    endif
+  endwhile
+  echo i
+  return i
+enddef #  }}}
+export def CountLinesDownNt(smbol: list<any>, brk: list<any>, pos: list<any>): number # {{{
+  var i = pos[1]
+  var nd = line( '$' )
+  while i <= nd
+    if ListCheckCondsLine(smbol, i) == 1 && ListCheckCondsLine(brk, i) == 0
+      return i
+    else
+      i += 1
+    endif
+  endwhile
+  return i
+enddef #  }}}
+export def CountLinesUpTil(smbol: list<any>, brk: list<any>): number # {{{
+  var i = pos[1]
+  var nd = 0
+  while i >= nd
+    if ListCheckCondsLine(smbol, i) == 1 && ListCheckCondsLine(brk, i) == 0
+      return i
+    else
+      i -= 1
+    endif
+  endwhile
+  return i
+enddef #  }}}
+export def CountLinesDownTil(smbol: list<any>, brk: list<any>): number # {{{
   var i = 0
   return i
-enddef
-export def CountLinesUpTil(smbol: list<any>, brk: list<any>): number
-  var i = 0
-  return i
-enddef
-export def CountLinesDownTil(smbol: list<any>, brk: list<any>): number
-  var i = 0
-  return i
-enddef
+enddef #  }}}
