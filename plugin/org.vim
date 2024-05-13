@@ -11,19 +11,12 @@ g:org_sp_formula_list = [
   'vconcat'
 ]
 
-# ~/Plantillas/vim9org/autoload/spreadsheet/cells/countcells.vim
-# ~/Plantillas/vim9org/autoload/
-import autoload "spreadsheet/cells/countcells.vim" as cntcll
-import autoload "spreadsheet/cells/dataprops.vim" as dtaprps
-import autoload "spreadsheet/data/datatypes.vim" as dtatypes
-import autoload "spreadsheet/data/rangedata.vim" as rngdta
-import autoload "spreadsheet/formlas/frmlasincell.vim" as frmlacll
-import autoload "spreadsheet/formlas/frmlaslist.vim" as frmlalst
-import autoload "spreadsheet/formlas/frmlavalidate.vim" as frmlaval
-
 # Import section {{{
-import autoload "spreadsheet/org_formulas.vim" as frml
-import autoload "spreadsheet/org_cellsmanage.vim" as mng
+# ~/Plantillas/vim9org/autoload/spreadsheet/cells/countcells.vim
+# ~/Plantillas/vim9org/autoload/spreadsheet/countformulas.vim
+import autoload "base/counters/linecounters.vim" as lnc
+import autoload "base/counters/stringcounters.vim" as snc
+import autoload "spreadsheet/countformulas.vim" as cfr
 #  }}}
 def TestFormulaValidation(tb: list<list<string>>, form: string): number
   # Description: Will test all the functions.
@@ -78,58 +71,25 @@ def TestCases() # {{{
     '@2$2..@3$3=vsum(@2$3..@3$2)+5+vmean($2..$3)+vmin($2..$3)-vmax($2..$3)', # Formula Range obtain
     '@4vsum(@2$3..@3$2)+5+vmean($2..$3)+vmin($2..$3)-vmax($2..$3)', # Wrong Formula
     '@1$3=vconcat(@1$1,@2$3)',
-    '$2@3=vsum(vmean(2,4,vmin(44,22,$4,@3)),vmax(22,33,$2),vmin(12,14,$3,$5))'
+    "@3$2=vsum(vmean(2,4,vmin(44,22,$4,@3)),vmax(22,33,$2),vmin(12,14,$3,$5)) '( + 2 3)"
   ]
 
-  # var DictCreate = mng.DictGen()
+  echo formulas_example[6]
+  # var stridlst1 = snc.StridxLst( formulas_example[6], '(' )
+  # echo stridlst1
+  # var stridlst3 = snc.StridxLst( formulas_example[6], ')' )
+  # echo stridlst3
+  # var stridlst2 = snc.MtchList( formulas_example[6], '\a\a(' )
+  # echo stridlst2
+  # var stridlst4 = snc.StridxLst( formulas_example[6], "'(" )
+  # echo stridlst4
+  # var stridlst5 = snc.SortTilMinPairsTxt( formulas_example[6], stridlst2 )
+  var test_all_function = cfr.CalculateFormulas(formulas_example[6], list_example_1)
   # # echo DictCreate
   # var start_point = mng.ObtainStart( formulas_example[0] )
   # # echo start_point
   # var add_ranges = mng.RangeCells( DictCreate, start_point[-1], list_example_1, start_point )
-  var count_pars = mng.CountRangesNested( formulas_example[6] )
   # echo add_ranges
-  # Previous attempts {{{
-  # var testStart = mng.ObtainStart( formulas_example[0] )
-  # # echo testStart
-  # var testFormulas = mng.ReadFunctions( testStart )
-  # # echo testFormulas
-  # var testRanges = mng.ReadNumberOfFunctions( testStart, testFormulas )
-  # # echo testRanges
-  # var testStrFormulas = mng.ObtainStringFunctions( testRanges, testStart, testFormulas )
-  # # echo testStrFormulas
-  # var testRangeFuncts = mng.ValuesInFuncs( testStrFormulas )
-  # # echo testRangeFuncts
-  # var testRangesObtain = mng.RngToTbData( testRangeFuncts, testStart, list_example_1)
-  # # echo testRangesObtain
-  # var testDataObtain = mng.RangesOfInfo(testRangesObtain, testStart, list_example_1, testFormulas )
-  # echo testDataObtain
-  # var testExecuteFormulas = mng.ExecuteFormulas( testDataObtain, testFormulas )
-  # echo testExecuteFormulas
-  # var testExecuteFormlas = 
-
-  # # First attempt to Calculate a list of strings {{{
-  # var test7 = frml.VsumCalc( [ '22', '$ 33.00', '  ', ' 33.4 ', '20' ] )
-  # # echo test7
-  # var test8 = frml.VmeanCalc( [ '22', '$ 33.00', '  ', ' 33.4 ', '20' ] )
-  # # echo test8
-  # var test9 = frml.VminCalc( [ '22', '$ 33.00', ' 33 ', ' 33.4 ', '20' ] )
-  # # echo test9
-  # var test10 = frml.VmaxCalc( [ '22', '$ 33.00', ' 33 ', ' 33.4 ', '20' ] )
-  # var test11 = frml.VmodeCalc( [ '22', '$ 33.00', ' 33 ', ' 33.4 ', '22' ] )
-  # echo test11
-  # # Remember: Will make the median, for elements
-  # var test12 = frml.VmedianCalc( [ '$ 22', '$ 33.00', '$ 33 ', '$ 33.4 ', '$ 22', '$ 11.55' ] )
-  # echo test12
-  # var test13 = frml.VconcatMake( [ 'Lista ', 'de ', 'valores', 'válidos ', 'lol ', 'cosas ' ] )
-  # echo test13
-  # var test14 = frml.VconvertUnits( ['33', 'm', 'km'] )
-  # echo test14
-  # var test15 = frml.VEvalVscript( 'getline(".")' )
-  # echo test15
-  # # echo test10
-  # # var test3 = 
-  # # }}}
-  # }}}
 enddef
 
 # }}}

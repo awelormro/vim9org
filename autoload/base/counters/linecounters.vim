@@ -46,31 +46,3 @@ export def CountLinesDownIf(smbol: list<any>, brk: list<any>, pos: list<any>): n
   echo i
   return i
 enddef #  }}}
-export def CountLinesDownNt(smbol: list<any>, brk: list<any>, pos: list<any>): number # {{{
-  var i = pos[1]
-  var nd = line( '$' )
-  while i <= nd
-    if ListCheckCondsLine(smbol, i) == 1 && ListCheckCondsLine(brk, i) == 0
-      return i
-    else
-      i += 1
-    endif
-  endwhile
-  return i
-enddef #  }}}
-export def CountLinesUpTil(smbol: list<any>, brk: list<any>): number # {{{
-  var i = pos[1]
-  var nd = 0
-  while i >= nd
-    if ListCheckCondsLine(smbol, i) == 1 && ListCheckCondsLine(brk, i) == 0
-      return i
-    else
-      i -= 1
-    endif
-  endwhile
-  return i
-enddef #  }}}
-export def CountLinesDownTil(smbol: list<any>, brk: list<any>): number # {{{
-  var i = 0
-  return i
-enddef #  }}}
