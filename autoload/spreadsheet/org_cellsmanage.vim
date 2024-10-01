@@ -1,7 +1,9 @@
 vim9script
 # vim: set fdm=marker:
 # vim: set nospell:
+# /home/abu/Plantillas/vim9org/autoload/spreadsheet/extractdata.vim
 import autoload "spreadsheet/org_formulas.vim" as frml
+import autoload "spreadsheet/extractdata.vim" as exct
 # sitio para checkar tonos:
 # #334422
 #
@@ -28,7 +30,6 @@ export def CountRangesNested(frmla: string): list<any> # {{{
   echo all_close_pars
   return []
 enddef # }}}
-
 # Roadmap: {{{
 # 1.- Obtain the data information, row and col for complete the function:
 #     ObtainStart
@@ -63,7 +64,6 @@ enddef # }}}
 # 7.- Substitute value in the table with the obtained value
 # }}}
 # Final function
-
 export def ObtainStart(frmla: string): list<any> # {{{
   # InputEx1: @3$4=vmean($4..$6)
   # OutputEx1: [3,4, vmean($4..$6)]

@@ -21,6 +21,15 @@ export def ListCheckCondsLine(smbol: list<any>, ln: number): number # {{{
   endfor
   return 0
 enddef # }}}
+export def ListCheckCondsStrDct(smbol: dict<any>, strng: string ): string
+  var lstkys = keys( smbol )
+  for sym in lstkys
+    if smbol[sym] =~ strng
+      return sym
+    endif
+  endfor
+  return 'Text'
+enddef
 export def CountLinesUpIf(smbol: list<any>, brk: list<any>, pos: list<any>): number # {{{ 
   var i = pos[1]
   while i >= 0
