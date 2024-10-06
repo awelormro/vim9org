@@ -4,11 +4,29 @@ vim9script
 # b:current_syntax='org'
 #
 # Check if syntax exists for file {{{
+
 if !exists('b:current_syntax')
   finish
 endif
 b:current_syntax = 'org'
 # }}}
+# Important variables to check {{{
+
+if !exists('b:orgtitle')
+  b:orgtitle = 0
+endif
+
+# Generate a variable to select the export engine
+if !exists('g:org_export_engine')
+  g:org_export_engine = 'pandoc'
+endif
+
+if !exists('g:org_export_pandoc_args')
+  g:org_export_pandoc_args = ' '
+endif
+
+
+#  }}}
 # Import files {{{
 
 # setlocal commentstring="/*#%s*"
@@ -20,6 +38,9 @@ import autoload "links/linkenter.vim" as lnks
 import autoload "todowords/toggletodo.vim" as tdo
 import autoload "todowords/orgcheckboxes.vim" as lst
 import autoload "export/exporters.vim" as exprt
+import autoload "journal/addtojournal.vim" as jrnl
+import autoload "agenda/createagendafile.vim" as agcr
+import autoload "converter/convertions.vim" as conv
 # import autoload "org_links.vim"
 # import autoload "org_normal.vim"
 # import autoload "org_tables.vim" as tbl
@@ -35,38 +56,39 @@ def OrgFold9s(lnum: number): string
   # echo 1
   var Ntcodeblock = (x) => synIDattr(synID(x, 1, 1), 'name') !=# 'OrgCodeBlock'
   var line = getline(v:lnum)
-  if line == ':PROPERTIES:'
-    # echo "Properties section"
-    var lnum_end = search(':END:', 'n', v:lnum + 1)
-    if lnum_end > lnum
-      return '<3'  # Nivel de plegado inferior al de los encabezados
-    endif
+  var lnum_end = -10
+  var nextline = getline(v:lnum + 1)
+  if line =~# ':PROPERTIES:'
+    return "a7"
+  elseif line =~# ':END:'
+    return 's7'
+  elseif line =~# "#+BEGIN_"
+    return "a7"
+  elseif line =~# "#+END_"
+    return "s7"
+  elseif line =~# " {{{"
+    return "a7"
+  elseif line =~# " }}}"
+    return "s7"
   endif
   if line =~# '^\*\+ ' && Ntcodeblock(v:lnum)
     return ">" .. match(line, ' ')
   endif
-  var nextline = getline(v:lnum + 1)
   if (line =~ '^.\+$') && (nextline =~ '^=\+$') && Ntcodeblock(v:lnum + 1)
     return ">1"
   endif 
-
   if (line =~ '^.\+$') && (nextline =~ '^-\+$') && Ntcodeblock(v:lnum + 1)
     return ">2"
   endif
-
-
   return "="
 enddef
 
+
 setlocal foldmethod=expr
 setlocal foldexpr=OrgFold9s(v:lnum)
-if !exists('g:org_export_engine')
-  g:org_export_engine = 'pandoc'
-endif
-if !exists('g:org_export_pandoc_args')
-  g:org_export_pandoc_args = ' '
-endif
 
+#  }}}
+# Command for pandoc Exporter {{{
 
 if g:org_export_engine == 'pandoc'
   command! -buffer -nargs=* -complete=customlist,org_normal.CompleteFormatPandoc OrgConvertToFormat org_normal.OrgExporter(<q-args>)
@@ -80,8 +102,6 @@ command -buffer OrgFollowNextLink     lnks.OrgSearchNextLink()
 command -buffer OrgFollowPrevLink     lnks.OrgSearchPrevLink()
 command -buffer OrgCheckBoxUpdate     lst.OrgCheckboxupdate() 
 command -buffer OrgCheckBoxInsert     lst.OrgCheckboxinsert()
-# command -buffer OrgCheckBoxUpdate     call todowords#checklists#Checkboxupdate()
-# command -buffer OrgCheckBoxInsert     call todowords#checklists#CheckboxInsert()
 command -buffer OrgTODOToggleRight    tdo.OrgTodoShifterRight()
 command -buffer OrgTODOToggleLeft     tdo.OrgTodoShifterLeft()
 command -buffer OrgTODOTogglePriorUp  tdo.OrgPrioritiesRight()
@@ -89,6 +109,17 @@ command -buffer OrgTODOTogglePriorDwn tdo.OrgPrioritiesLeft()
 command -buffer OrgReloadconf         so Plantillas/vim9org/ftplugin/org.vim
 command -buffer OrgFollowNextHead     lnks.OrgSearchNextHead()
 command -buffer OrgFollowPrevtHead     lnks.OrgSearchPrevHead()
+command -buffer OrgJournalOpen         jrnl.DiaryEntry()
+command -buffer OrgAgendaView         agcr.ReadAgendaFiles()
+# if g:org_export_engine == 'pandoc'
+#   command -buffer 
+# endif
+# if g:org_export_engine == 'pandoc'
+#   command! -buffer -nargs=* -complete=customlist,conv.CompleteFormatPandoc OrgConvertToFormat conv.OrgExporter(<q-args>)
+# elseif g:org_export_engine == 'emacs'
+# endif
+
+
 #  }}}
 # Declare Variables in case of need {{{
 if !exists("g:org_tbl_cell_to_use")
@@ -226,7 +257,7 @@ if g:org_repeat_use == 1
   nnoremap <buffer> <Leader>ole  <Plug>OrgLnEnter<Bar>:silent!     call repeat#set("\<Plug>OrgLnEnter")<CR><bar>:echo ""<CR>
   nnoremap <buffer> <leader>ohn  <Plug>OrgHeFolNxt<bar>:silent!    call repeat#set("\<Plug>OrgHeFolNxt")<CR><bar>:echo ""<CR>
   nnoremap <buffer> <leader>ohp  <Plug>OrgHeFolPre<bar>:silent!    call repeat#set("\<Plug>OrgHeFolPre")<CR><bar>:echo ""<CR>
-  nnoremap <buffer> <leader>c<leader>i <Plug>OrgCheckBoxInsert<bar>:silent! call repeat#set("\<Plug>OrgCheckBoxInsert")<CR><bar>:echo ""<CR>
+  # nnoremap <buffer> <leader>c<leader>i <Plug>OrgCheckBoxInsert<bar>:silent! call repeat#set("\<Plug>OrgCheckBoxInsert")<CR><bar>:echo ""<CR>
   nnoremap <buffer> <leader>c<leader>c <Plug>OrgCheckBoxUpdate<bar>:silent! call repeat#set("\<Plug>OrgCheckBoxUpdate")<CR><bar>:echo ""<CR>
 else
   nnoremap <buffer> <S-Right>    <Plug>OrgTDTogRight
@@ -243,4 +274,6 @@ else
 endif
 #  }}}
 nnoremap <buffer> <leader>c<leader>i <Plug>OrgCheckBoxInsert
+# Mapear la función para acceder rápidamente con <leader>d
+nnoremap <leader>d :OrgJournalOpen<CR>
 #  }}}

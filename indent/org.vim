@@ -1,8 +1,8 @@
 vim9script
-
+# vim: set foldmethod=marker: 
 # Vim indent plugin file
-# Language: Odin
-# Maintainer: Maxim Kim <habamax@gmail.com>
+# Language: Org
+# Maintainer: Marco Antonio Romero  <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
 # Last Change: 2024-01-15
 
@@ -20,6 +20,7 @@ setlocal nosmartindent
 # setlocal cinkeys=0-,0},0),0],!^F,:,o,O
 
 setlocal indentexpr=GetOrgIndent(v:lnum)
+
 
 def PrevLine(lnum: number): number
     var plnum = lnum - 1
@@ -45,6 +46,7 @@ def PrevLine(lnum: number): number
     endwhile
     return plnum
 enddef
+
 
 def GetOrgIndent(lnum: number): number
   var ind: number = lnum
@@ -82,4 +84,11 @@ def GetOrgIndent(lnum: number): number
   endif
   return level
 enddef
+
+
+
+
+
+
+
 

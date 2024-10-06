@@ -46,3 +46,16 @@ export def OrgChecboxInsert()
   normal l
 enddef
 # }}}
+# Update checkbox number {{{
+export def UpdateNumberLists() # {{{
+  var linen = line('.')
+  var linec = getline(linen)
+  if linec =~ '^\s*$'
+cosa
+
+if a ==1 
+echo 1
+    echo 'Empty line'
+  endif
+enddef # }}}
+#  }}}

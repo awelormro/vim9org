@@ -1,7 +1,7 @@
 vim9script
 # vim: set foldmethod=marker: 
-# Update checkbox {{{
-export def OrgCheckboxupdate()
+
+export def OrgCheckboxupdate() # {{{
   # Remember [0,row,column,0]
   var curprev = getpos('.')
   # curprev = Cursor previous, getting the whole settings using getpos
@@ -34,16 +34,15 @@ export def OrgCheckboxupdate()
   # Go back to cursor position
   cursor(curprev[1], curprev[2])
   # echo 'not list found'
-  # [X] Cosas pendejas
-enddef
-# }}}
-# Insert Checkbox {{{
-export def OrgCheckboxinsert()
+enddef # }}}
+export def OrgCheckboxinsert() # {{{
   echo 'Line working'
   append(line('.'), '- [ ]  ')
   cursor(line('.') + 1, 7)
   startinsert
   execute "normal \<Right>"
   normal l
+enddef # }}}
+def OrgNumbers() # {{{
 enddef
 # }}}

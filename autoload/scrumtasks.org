@@ -1,5 +1,5 @@
 * TODO Scrum Planning 
-** TODO Sintaxis
+** Sintaxis
    1. Títulos
    2. Listas
    3. formato de texto

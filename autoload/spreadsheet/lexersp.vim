@@ -1,6 +1,7 @@
 vim9script
 # vim: set foldmethod=marker:
-export def LexerSp(frmla: string): list<any>
+export def LexerSp(frmla: string): list<any> # {{{ 
+  # Variable declarations {{{
   var i = 0
   var token = []
   var tokeninfo = []
@@ -11,6 +12,8 @@ export def LexerSp(frmla: string): list<any>
   var separators = [',', '=' ]
   var bracketsl = [ ')', '(' ]
   var lfrmla = len( frmla )
+  # }}}
+  # Loop to verify the token type and add it to the list {{{
   while i < lfrmla
     if index( operators, frmla[i] ) > -1
       tokeninfo = AddOperatorToken( frmla[i], i )
@@ -40,10 +43,10 @@ export def LexerSp(frmla: string): list<any>
     add( tokens, tokeninfo[1] )
     i = tokeninfo[0]
   endwhile
+  # }}}
   return tokens
-enddef
-
-def AddBracketToken(dta: string, i: number): list<any>
+enddef # }}}
+def AddBracketToken(dta: string, i: number): list<any> # {{{ 
   var token = [  ]
   var retoken = []
   if dta == '('
@@ -54,31 +57,27 @@ def AddBracketToken(dta: string, i: number): list<any>
     retoken = [ i + 1, token ]
   endif
   return retoken
-enddef
-
-def AddOperatorToken(dta: string, i: number): list<any>
+enddef # }}}
+def AddOperatorToken(dta: string, i: number): list<any> # {{{ 
   var token = [ 'Operator', dta ]
   return [ i + 1, token ]
-enddef
+enddef # }}}
+def AddSeparatorToken( dta: string, i: number ): list<any> # {{{
 
-def AddSeparatorToken( dta: string, i: number ): list<any>
   var token = [ 'Separator', dta ]
   return [ i + 1, token ]
-enddef
-
-def AddSquoteToken(dta: string, i: number): list<any>
+enddef # }}}
+def AddSquoteToken(dta: string, i: number): list<any> # {{{
   var token = [ 'Squote', dta ]
   return [ i + 1, token ]
-enddef
-
-def AddStringToken(dta: string, i: number): list<any>
+enddef # }}}
+def AddStringToken(dta: string, i: number): list<any> # {{{
   var start = i
   var end = stridx( dta, '"', i + 1 )
   var token = [ 'String', dta[ start : end ] ]
   return [ end + 1, token ]
-enddef
-
-def AddKWordToken(dta: string, i: number): list<any>
+enddef # }}}
+def AddKWordToken(dta: string, i: number): list<any> # {{{
   var start = i
   var end = i
   var k = i
@@ -89,9 +88,8 @@ def AddKWordToken(dta: string, i: number): list<any>
   endwhile
   var token = [ 'Keyword', dta[ start : end ] ]
   return [ end + 1, token ]
-enddef
-
-def CellAtToken(dta: string, i: number): list<any>
+enddef # }}}
+def CellAtToken(dta: string, i: number): list<any> # {{{
   var start = i
   var vend = i
   var cnt_dots = 0
@@ -134,9 +132,8 @@ def CellAtToken(dta: string, i: number): list<any>
   endwhile
   token = SelectAtToken( dta, cnt_dots, cnt_at, cnt_dllr, start, vend, err_token )
   return [ vend + 1, token ]
-enddef
-
-def SelectAtToken( dta: string, cnt_dots: number, cnt_at: number, cnt_dllr: number, strt: number, vend: number, errflg: number ): list<any>
+enddef # }}}
+def SelectAtToken( dta: string, cnt_dots: number, cnt_at: number, cnt_dllr: number, strt: number, vend: number, errflg: number ): list<any> # {{{
   if cnt_dots == 0 && cnt_at == 1 && cnt_dllr == 1
     return [ 'Cell', dta[ strt : vend ] ] # Passed
   elseif cnt_dots == 1 && cnt_at == 2 && cnt_dllr == 2
@@ -150,9 +147,8 @@ def SelectAtToken( dta: string, cnt_dots: number, cnt_at: number, cnt_dllr: numb
   else
     return [ 'Error', 'ERR' ]
   endif
-enddef
-
-def CellDllToken( dta: string, k: number ): list<any>
+enddef # }}}
+def CellDllToken( dta: string, k: number ): list<any> # {{{
   var start = k
   var vend = k
   var cnt_dots = 0
@@ -187,9 +183,8 @@ def CellDllToken( dta: string, k: number ): list<any>
   endwhile
   token = DllrToken( dta, cnt_dots, cnt_dllr, cnt_spcs, start, vend, err_token )
   return [ vend + 1, token ]
-enddef
-
-def DllrToken(dta: string, cnt_dots: number, cnt_dllr: number, cnt_spcs: number, strt: number, vend: number, errflg: number): list<any>
+enddef # }}}
+def DllrToken(dta: string, cnt_dots: number, cnt_dllr: number, cnt_spcs: number, strt: number, vend: number, errflg: number): list<any> # {{{
   if cnt_dots == 1 && cnt_dllr == 1 && cnt_spcs == 1
     return [ 'Currency', dta[ strt + 2 : vend ] ] # Passed
   elseif cnt_dots == 0 && cnt_spcs == 0 && cnt_dllr == 1
@@ -201,9 +196,8 @@ def DllrToken(dta: string, cnt_dots: number, cnt_dllr: number, cnt_spcs: number,
   else
     return [ 'Error', 'ERR' ]
   endif
-enddef
-
-def NumberToken(dta: string, k: number ): list<any>
+enddef # }}}
+def NumberToken(dta: string, k: number ): list<any> # {{{
   var i = k
   var cnt_dots = 0
   var start = k
@@ -229,9 +223,8 @@ def NumberToken(dta: string, k: number ): list<any>
     token = [ "Int", dta[ start : vend ] ]
     return [ vend + 1, token ]
   endif
-enddef
-
-def ExcelToken(dta: string, k: number ): list<any>
+enddef # }}}
+def ExcelToken(dta: string, k: number ): list<any> # {{{
   var i = k
   var cnt_dots = 0
   var cnt_caps = 0
@@ -268,8 +261,7 @@ def ExcelToken(dta: string, k: number ): list<any>
     token = [ 'ExcelRange', dta[start : vend] ]
     return [ vend + 1, token ]
   endif
-enddef
-
-def SpaceToken(dta: string, i: number): list<any>
+enddef # }}}
+def SpaceToken(dta: string, i: number): list<any> # {{{
   return [ i + 1, [ 'Space', ' ' ] ]
-enddef
+enddef # }}}
