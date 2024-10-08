@@ -4,7 +4,7 @@ vim9script
 # Language: Org
 # Maintainer: Marco Antonio Romero  <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2024-01-15
+# Last Change: 2024-10-06
 
 if exists("b:did_indent")
     finish
@@ -13,42 +13,7 @@ b:did_indent = 1
 
 b:undo_indent = 'setlocal autoindent< indentexpr<'
 
-setlocal autoindent
-setlocal nosmartindent
-# setlocal cindent
-# setlocal cinoptions=L0,m1,(s,j1,J1,l1,+0,:0,#3
-# setlocal cinkeys=0-,0},0),0],!^F,:,o,O
-
-setlocal indentexpr=GetOrgIndent(v:lnum)
-
-
-def PrevLine(lnum: number): number
-    var plnum = lnum - 1
-    var pline: string
-    while plnum > 1
-        plnum = prevnonblank(plnum)
-        pline = getline(plnum)
-        # XXX: take into account nested multiline /* /* */ */ comments
-        if pline =~ '\*/\s*$'
-            while getline(plnum) !~ '/\*' && plnum > 1
-                plnum -= 1
-            endwhile
-            if getline(plnum) =~ '^\s*/\*'
-                plnum -= 1
-            else
-                break
-            endif
-        elseif pline =~ '^\s*//'
-            plnum -= 1
-        else
-            break
-        endif
-    endwhile
-    return plnum
-enddef
-
-
-def GetOrgIndent(lnum: number): number
+def GetOrgIndent(lnum: number): number # {{{
   var ind: number = lnum
   var plnum: number = prevnonblank(lnum - 1)
   var pline: string = getline(lnum - 1)
@@ -56,7 +21,6 @@ def GetOrgIndent(lnum: number): number
   var level: number = pind
   if pline =~ '^\s*- \['
     return level + 6
-  # elseif pline =~ '^\s*- ' || pline =~ '^\s*+ ' || pline =~ '^\s*\* '
   elseif pline =~ '^\s*[+-\*] '
     return level + 2
   # TODO: Add conditional for count decimals and adjust level
@@ -80,15 +44,40 @@ def GetOrgIndent(lnum: number): number
     return level + 6
   elseif pline =~ '^\*\*\*\*\*\* '
     return level + 7
-  # else
   endif
   return level
-enddef
+enddef # }}}
+setlocal autoindent
+setlocal nosmartindent
+# setlocal cindent
+# setlocal cinoptions=L0,m1,(s,j1,J1,l1,+0,:0,#3
+# setlocal cinkeys=0-,0},0),0],!^F,:,o,O
+
+setlocal indentexpr=GetOrgIndent(v:lnum)
 
 
-
-
-
-
-
+def PrevLine(lnum: number): number # {{{
+    var plnum = lnum - 1
+    var pline: string
+    while plnum > 1
+        plnum = prevnonblank(plnum)
+        pline = getline(plnum)
+        # XXX: take into account nested multiline /* /* */ */ comments
+        if pline =~ '\*/\s*$'
+            while getline(plnum) !~ '/\*' && plnum > 1
+                plnum -= 1
+            endwhile
+            if getline(plnum) =~ '^\s*/\*'
+                plnum -= 1
+            else
+                break
+            endif
+        elseif pline =~ '^\s*//'
+            plnum -= 1
+        else
+            break
+        endif
+    endwhile
+    return plnum
+enddef # }}}
 

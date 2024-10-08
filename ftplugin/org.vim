@@ -16,6 +16,10 @@ if !exists('b:orgtitle')
   b:orgtitle = 0
 endif
 
+if !exists('b:org_heading_actuallevel')
+  b:org_heading_actuallevel = 0
+endif
+
 # Generate a variable to select the export engine
 if !exists('g:org_export_engine')
   g:org_export_engine = 'pandoc'
@@ -25,7 +29,17 @@ if !exists('g:org_export_pandoc_args')
   g:org_export_pandoc_args = ' '
 endif
 
+if !exists("g:org_tbl_cell_to_use")
+  g:org_tbl_cell_to_use = 'top'
+endif
 
+if !exists("g:org_days_of_week")
+  g:org_days_of_week = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Saturday"  ]
+endif
+
+if !exists("g:org_days_of_week_short")
+  g:org_days_of_week_short = [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"  ]
+endif
 #  }}}
 # Import files {{{
 
@@ -46,11 +60,6 @@ import autoload "converter/convertions.vim" as conv
 # import autoload "org_tables.vim" as tbl
 # import autoload "org_spreads.vim" as sprd
 #  }}}
-# Importer a function to add an example {{{
-def ImportFunctionFromOrgAl()
-  org_normal.SumFunction()
-enddef
-#  }}}
 # Vim9script fold function {{{
 def OrgFold9s(lnum: number): string
   # echo 1
@@ -58,9 +67,9 @@ def OrgFold9s(lnum: number): string
   var line = getline(v:lnum)
   var lnum_end = -10
   var nextline = getline(v:lnum + 1)
-  if line =~# ':PROPERTIES:'
+  if line =~# '^\s*:PROPERTIES:$'
     return "a7"
-  elseif line =~# ':END:'
+  elseif line =~# '^\s*:END:$'
     return 's7'
   elseif line =~# "#+BEGIN_"
     return "a7"
@@ -88,6 +97,8 @@ setlocal foldmethod=expr
 setlocal foldexpr=OrgFold9s(v:lnum)
 
 #  }}}
+# Command declarations {{{
+
 # Command for pandoc Exporter {{{
 
 if g:org_export_engine == 'pandoc'
@@ -95,7 +106,6 @@ if g:org_export_engine == 'pandoc'
 elseif g:org_export_engine == 'emacs'
 endif
 # }}}
-# Command declarations {{{
 command -buffer OrgCreateTable        tbl.OrgInsertTable()
 command -buffer OrgEnterLink          lnks.OrgEnterLink()
 command -buffer OrgFollowNextLink     lnks.OrgSearchNextLink()
@@ -111,20 +121,7 @@ command -buffer OrgFollowNextHead     lnks.OrgSearchNextHead()
 command -buffer OrgFollowPrevtHead     lnks.OrgSearchPrevHead()
 command -buffer OrgJournalOpen         jrnl.DiaryEntry()
 command -buffer OrgAgendaView         agcr.ReadAgendaFiles()
-# if g:org_export_engine == 'pandoc'
-#   command -buffer 
-# endif
-# if g:org_export_engine == 'pandoc'
-#   command! -buffer -nargs=* -complete=customlist,conv.CompleteFormatPandoc OrgConvertToFormat conv.OrgExporter(<q-args>)
-# elseif g:org_export_engine == 'emacs'
-# endif
 
-
-#  }}}
-# Declare Variables in case of need {{{
-if !exists("g:org_tbl_cell_to_use")
-  g:org_tbl_cell_to_use = 'top'
-endif
 #  }}}
 # Custom function tests {{{
 # Declaramos una función llamada `ShowPopupWindow` que se encargará de crear la ventana
@@ -150,9 +147,6 @@ def PopupSave(arg: number) # {{{
     execute('w')
     echo "Saved file"
   endif
-enddef # }}}
-def PandocConvert() # {{{
-
 enddef # }}}
 def PandocExportPopup() # {{{
   var frmats = [ 'docx', 'pdf', 'tex', 'beamer', 'beamertex', 'pptx' ]
@@ -275,5 +269,7 @@ endif
 #  }}}
 nnoremap <buffer> <leader>c<leader>i <Plug>OrgCheckBoxInsert
 # Mapear la función para acceder rápidamente con <leader>d
-nnoremap <leader>d :OrgJournalOpen<CR>
+nnoremap <leader>oj :OrgJournalOpen<CR>
+#  }}}
+# Autocmds {{{
 #  }}}
