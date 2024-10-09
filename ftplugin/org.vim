@@ -34,7 +34,7 @@ if !exists("g:org_tbl_cell_to_use")
 endif
 
 if !exists("g:org_days_of_week")
-  g:org_days_of_week = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Saturday"  ]
+  g:org_days_of_week = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"  ]
 endif
 
 if !exists("g:org_days_of_week_short")
@@ -55,6 +55,8 @@ import autoload "export/exporters.vim" as exprt
 import autoload "journal/addtojournal.vim" as jrnl
 import autoload "agenda/createagendafile.vim" as agcr
 import autoload "converter/convertions.vim" as conv
+import autoload "calendar/calndar.vim" as calen
+# call calen.PrintCalendarFull(2024)
 # import autoload "org_links.vim"
 # import autoload "org_normal.vim"
 # import autoload "org_tables.vim" as tbl

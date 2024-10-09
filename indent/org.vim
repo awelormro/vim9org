@@ -11,7 +11,9 @@ if exists("b:did_indent")
 endif
 b:did_indent = 1
 
-b:undo_indent = 'setlocal autoindent< indentexpr<'
+b:undo_indent = 'setlocal indentexpr< autoindent<'
+
+
 
 def GetOrgIndent(lnum: number): number # {{{
   var ind: number = lnum
@@ -19,6 +21,7 @@ def GetOrgIndent(lnum: number): number # {{{
   var pline: string = getline(lnum - 1)
   var pind: number = indent(plnum)
   var level: number = pind
+  var prevstart: number = b:org_heading_actuallevel
   if pline =~ '^\s*- \['
     return level + 6
   elseif pline =~ '^\s*[+-\*] '
@@ -30,7 +33,7 @@ def GetOrgIndent(lnum: number): number # {{{
     return level + 4
   elseif pline =~ '^\s*\d\d\d[\.\)] '
     return level + 5
-  elseif pline =~ '^\s*\a[\.)] '
+  elseif pline =~ '\M^\s*\a\.\s'
     return level + 3
   elseif pline =~ '^\* '
     return level + 2
