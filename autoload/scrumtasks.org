@@ -26,8 +26,72 @@
    6. Calcular fórmulas complejas con valores de la tabla.
    7. Sustituir valores de fórmulas complejas en la tabla 
 * Scrum semanal
-  0. Generar función test para el spreadsheet
-  1. Calcular valores simples en celdas y sustituir
-  2. Diferenciar los tipos de valores en la tabla si son rangos, celdas o valores y tratarlos  
-  2. Generar folding 
-  3. Generar listas Ordenadas  
+  1. Generar función test para el spreadsheet
+  2. Calcular valores simples en celdas y sustituir
+  3. Diferenciar los tipos de valores en la tabla si son rangos, celdas o valores y tratarlos  
+  4. Generar folding 
+  5. Generar listas Ordenadas  
+
+#+BEGIN_SRC 
+FUNCION generarCalendario(mes, año)
+    SI mes es NULO O año es NULO ENTONCES
+        mes, año = obtenerFechaActual()
+    FIN SI
+    
+    diasEnMes = obtenerDiasEnMes(mes, año)
+    diaInicial = obtenerDiaSemana(1, mes, año)  // 0 para domingo, 1 para lunes, etc.
+    
+    IMPRIMIR "Calendario para ", mes, año
+    IMPRIMIR "Dom Lun Mar Mie Jue Vie Sab"
+    
+    // Espacios en blanco antes del primer día del mes
+    PARA i DESDE 0 HASTA diaInicial - 1
+        IMPRIMIR "    "  // 4 espacios para alinear
+    FIN PARA
+    
+    // Imprimir días del mes
+    PARA dia DESDE 1 HASTA diasEnMes
+        IMPRIMIR dia FORMATO "XX "  // Imprimir número de día con dos dígitos y espacio
+        
+        SI (dia + diaInicial) % 7 == 0  // Fin de la semana
+            IMPRIMIR nuevaLinea()
+        FIN SI
+    FIN PARA
+FIN FUNCION
+
+FUNCION obtenerDiasEnMes(mes, año)
+    SI mes == 4 O mes == 6 O mes == 9 O mes == 11 ENTONCES
+        RETORNAR 30
+    SI NO SI mes == 2 ENTONCES
+        SI esBisiesto(año) ENTONCES
+            RETORNAR 29
+        SI NO
+            RETORNAR 28
+        FIN SI
+    SI NO
+        RETORNAR 31
+    FIN SI
+FIN FUNCION
+
+FUNCION esBisiesto(año)
+    SI año % 4 == 0 Y (año % 100 != 0 O año % 400 == 0) ENTONCES
+        RETORNAR VERDADERO
+    SI NO
+        RETORNAR FALSO
+    FIN SI
+FIN FUNCION
+
+FUNCION obtenerDiaSemana(dia, mes, año)
+    // Usar el algoritmo de Zeller para calcular el día de la semana
+    SI mes < 3 ENTONCES
+        mes += 12
+        año -= 1
+    FIN SI
+    q = dia
+    m = mes
+    k = año % 100
+    j = año // 100
+    f = q + ((13 * (m + 1)) // 5) + k + (k // 4) + (j // 4) - (2 * j)
+    RETORNAR f % 7  // 0 para sábado, 1 para domingo, etc.
+FIN FUNCION
+#+END_SRC

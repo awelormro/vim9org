@@ -5,7 +5,6 @@
 " -----------------------------------------------------------------------------
 "
 " Do we use aggresive conceal?
-
 if exists("b:current_syntax")
   finish
 endif
@@ -321,7 +320,7 @@ syntax match reference '\\ref{.*}' transparent contains=referenceStart,reference
 syntax match referenceStart '\\ref{*' contained conceal cchar=[
 syntax match referenceEnd '\(\\ref{\w\+\)\@<=\zs}' contained conceal cchar=]
 " Citations {{{1
-syntax match citing '\[cite.*:.*\]'
+syntax match citing '\[cite.*:.*\]' containedin=ALL
 hi def link citing Boolean
 " Bullet Lists: {{{1
 " Ordered Lists:
@@ -371,13 +370,49 @@ hi def link org_title           Title
 syntax match  org_verbatim /^\s*>.*/
 syntax match  org_code     /^\s*:.*/
 
+" Fenced languages {{{
+
 syntax region org_verbatim start="^\s*#+BEGIN_.*"      end="^\s*#+END_.*"      keepend contains=org_block_delimiter
-syntax region org_code     start="^\s*#+BEGIN_SRC"     end="^\s*#+END_SRC"     keepend contains=org_block_delimiter
+if !exists('g:org_fenced_languages')
+  g:org_fenced_languages = []
+endif
+let s:done_include = {}
+" let s:concealends = 'concealends'
+let s:concealends = ''
+for s:type in map(copy(g:org_fenced_languages),'matchstr(v:val,"[^=]*$")')
+  if has_key(s:done_include, matchstr(s:type,'[^.]*'))
+    continue
+  endif
+  if s:type =~ '\.'
+    let b:{matchstr(s:type,'[^.]*')}_subtype = matchstr(s:type,'\.\zs.*')
+  endif
+  syn case match
+  exe 'syn include @orgHighlight_'.tr(s:type,'.','_').' syntax/'.matchstr(s:type,'[^.]*').'.vim'
+  unlet! b:current_syntax
+  let s:done_include[matchstr(s:type,'[^.]*')] = 1
+endfor
+unlet! s:type
+unlet! s:done_include
+let s:done_include = {}
+for s:type in g:org_fenced_languages
+  if has_key(s:done_include, matchstr(s:type,'[^.]*'))
+    continue
+  endif
+  exe 'syn region orgHighlight_'.substitute(matchstr(s:type,'[^=]*$'),'\..*','','').' matchgroup=orgcodeDelimiter start="^\s*#+BEGIN_SRC '.s:type.'" end="^\s*#+END_SRC" keepend contains=@orgHighlight_'.tr(matchstr(s:type,'[^=]*$'),'.','_') .' '.s:concealends
+  exe 'syn region orgHighlight_'.substitute(matchstr(s:type,'[^=]*$'),'\..*','','').  ' matchgroup=orgCodeDelimiter start="^\s*#+BEGIN_SRC '.s:type.'" end="^\s*#+END_SRC" keepend contains=@orgHighlight_'.tr(matchstr(s:type,'[^=]*$'),'.','_').' '.s:concealends
+  let s:done_include[matchstr(s:type,'[^.]*')] = 1
+endfor
+unlet! s:type
+unlet! s:done_include
+syn spell toplevel
+" BEGIN_SRC
+
+" syntax region org_code     start="^\s*#+BEGIN_SRC"     end="^\s*#+END_SRC"     keepend contains=org_block_delimiter
 syntax region org_code     start="^\s*#+BEGIN_EXAMPLE" end="^\s*#+END_EXAMPLE" keepend contains=org_block_delimiter
 
 hi def link org_code     String
 hi def link org_verbatim String
-
+hi def link orgCodeDelimiter Comment
 if (s:conceal_aggressively==1)
     hi link org_border_code     org_code
     hi link org_border_verb     org_verbatim
@@ -404,8 +439,6 @@ hi def link org_subtask_number_all Identifier
 " Plugin SyntaxRange: {{{1
 " This only works if you have SyntaxRange installed:
 " https://github.com/vim-scripts/SyntaxRange
-
-" BEGIN_SRC
 fun CallSyntaxRange()
 
   if exists('g:loaded_SyntaxRange')
@@ -417,40 +450,17 @@ fun CallSyntaxRange()
     " cpp must be below c, otherwise you get c syntax hl for cpp files
     call SyntaxRange#Include('#+BEGIN_SRC cpp', '#+END_SRC', 'cpp', 'comment containedin=ALL')
     call SyntaxRange#Include('#+BEGIN_SRC haskell', '#+END_SRC', 'haskell', 'comment containedin=ALL')
-    " call SyntaxRange#Include('#+BEGIN_SRC ocaml', '#+END_SRC', 'ocaml', 'comment containedin=ALL')
-    " call SyntaxRange#Include('#+BEGIN_SRC ruby', '#+END_SRC', 'ruby', 'comment containedin=ALL')
-    " call SyntaxRange#Include('#+BEGIN_SRC rust', '#+END_SRC', 'rust', 'comment containedin=ALL')
     call SyntaxRange#Include('#+BEGIN_SRC lua', '#+END_SRC', 'lua', 'comment containedin=ALL')
-    " call SyntaxRange#Include('#+BEGIN_SRC lisp', '#+END_SRC', 'lisp', 'comment containedin=ALL')
     call SyntaxRange#Include('#+BEGIN_SRC css', '#+END_SRC', 'css', 'comment containedin=ALL')
     call SyntaxRange#Include('#+BEGIN_SRC java', '#+END_SRC', 'java', 'comment containedin=ALL')
     call SyntaxRange#Include('#+BEGIN_SRC javascript', '#+END_SRC', 'javascript', 'comment containedin=ALL')
     call SyntaxRange#Include('#+BEGIN_SRC bash', '#+END_SRC', 'bash', 'comment containedin=ALL')
     call SyntaxRange#Include('#+BEGIN_SRC graphviz', '#+END_SRC', 'dot', 'comment containedin=ALL')
-    "call SyntaxRange#Include('\\begin[.*]{.*}', '\\end{.*}', 'tex', 'comment')
-    "call SyntaxRange#Include('\\begin{.*}', '\\end{.*}', 'tex', 'comment')
-    "call SyntaxRange#Include('\\(', '\\)', 'tex',)
-    "call SyntaxRange#Include('\$[^$]', '\$', 'pandoc')
-    " let g:org_latex_disabled     = get(g:, 'org_tex_disabled', 0)
-    " LaTeX
-    " if g:org_latex_disabled==0
-  " LaTeX
-  " call SyntaxRange#Include('\\begin[.*]{.*}', '\\end{.*}', 'tex')
-  " call SyntaxRange#Include('\\begin{.*}', '\\end{.*}', 'tex')
-  " call SyntaxRange#Include('\\\[', '\\\]', 'tex')
-  " call SyntaxRange#Include('\\(', '\\)', 'tex')
-  " call SyntaxRange#Include('\$[^$]', '\$', 'tex')
-    " endif
-    "
-  " call SyntaxRange#Include('\\begin[.*]{.*}', '\\end{.*}', 'pandoc')
-  " call SyntaxRange#Include('\\begin{.*}', '\\end{.*}', 'pandoc')
-  " call SyntaxRange#Include('\\\[', '\\\]', 'pandoc')
-  " call SyntaxRange#Include('\\(', '\\)', 'pandoc')
-  "call SyntaxRange#Include('\$[^$]', '\$', 'pandoc')
   let b:current_syntax = "org"
   endif
 endf
 
+let b:current_syntax = "org"
 " LaTeX: {{{1
 " Set embedded LaTex (pandoc extension) highlighting
 " Unset current_syntax so the 2nd include will work
@@ -476,7 +486,7 @@ syn match pandocLaTexSectionCmd /\\\(part\|chapter\|\(sub\)\{,2}section\|\(sub\)
 syn match pandocLaTeXDelimiter /[[\]{}]/ contained containedin=pandocLaTexSection
 " }}}3
 "autocmd BufEnter *.org call CallSyntaxRange()
-call CallSyntaxRange()
+" call CallSyntaxRange()
 " syntax sync clear
 
 let b:current_syntax = "org"

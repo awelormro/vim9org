@@ -40,6 +40,9 @@ endif
 if !exists("g:org_days_of_week_short")
   g:org_days_of_week_short = [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"  ]
 endif
+if !exists('g:current_org_submenu')
+  g:current_org_submenu = ''
+endif
 #  }}}
 # Import files {{{
 
@@ -56,7 +59,10 @@ import autoload "journal/addtojournal.vim" as jrnl
 import autoload "agenda/createagendafile.vim" as agcr
 import autoload "converter/convertions.vim" as conv
 import autoload "calendar/calndar.vim" as calen
+import autoload "submenus/submenus.vim" as sbmnu
+import autoload "tags/tagsmain.vim" as tgs
 # call calen.PrintCalendarFull(2024)
+# ~/Plantillas/vim9org/autoload/submenus/submenus.vim
 # import autoload "org_links.vim"
 # import autoload "org_normal.vim"
 # import autoload "org_tables.vim" as tbl
@@ -108,22 +114,48 @@ if g:org_export_engine == 'pandoc'
 elseif g:org_export_engine == 'emacs'
 endif
 # }}}
-command -buffer OrgCreateTable        tbl.OrgInsertTable()
-command -buffer OrgEnterLink          lnks.OrgEnterLink()
+# Link commands  {{{
 command -buffer OrgFollowNextLink     lnks.OrgSearchNextLink()
 command -buffer OrgFollowPrevLink     lnks.OrgSearchPrevLink()
-command -buffer OrgCheckBoxUpdate     lst.OrgCheckboxupdate() 
-command -buffer OrgCheckBoxInsert     lst.OrgCheckboxinsert()
+command -buffer OrgEnterLink          lnks.OrgEnterLink()
+command -buffer OrgFullEnterLink      lnks.EnterToLink()
+#  }}}
+# Todo word commands {{{
 command -buffer OrgTODOToggleRight    tdo.OrgTodoShifterRight()
 command -buffer OrgTODOToggleLeft     tdo.OrgTodoShifterLeft()
 command -buffer OrgTODOTogglePriorUp  tdo.OrgPrioritiesRight()
 command -buffer OrgTODOTogglePriorDwn tdo.OrgPrioritiesLeft()
-command -buffer OrgReloadconf         so Plantillas/vim9org/ftplugin/org.vim
+#  }}}
+# Checkbox Commands {{{
+command -buffer OrgCheckBoxUpdate     lst.OrgCheckboxupdate() 
+command -buffer OrgCheckBoxInsert     lst.OrgCheckboxinsert()
+#  }}}
+# Navigation commands {{{
 command -buffer OrgFollowNextHead     lnks.OrgSearchNextHead()
 command -buffer OrgFollowPrevtHead     lnks.OrgSearchPrevHead()
 command -buffer OrgJournalOpen         jrnl.DiaryEntry()
 command -buffer OrgAgendaView         agcr.ReadAgendaFiles()
-
+command -buffer OrgHeadersTree        sbmnu.HeaderSubmenu()
+#  }}}
+# Misc Commands {{{
+command -buffer OrgCreateTable        tbl.OrgInsertTable()
+command -buffer OrgReloadconf         so Plantillas/vim9org/ftplugin/org.vim
+#  }}}
+# Menu commands {{{
+command -buffer OrgExportMenu         sbmnu.MenuExporter()
+#  }}}
+# Testing commands {{{
+command -buffer OrgTableCreate tbl.OrgInsertTable()
+command -buffer OrgTableAddColumn tbl.OrgAddColumn()
+command -buffer -nargs=* OrgMenuCreation org_normal.Bufmenucreate(<q-args>)
+command -buffer Orgaugrps org_normal.TestExportandBypass()
+#  }}}
+# Tag Commands {{{
+# command -buffer OrgTagCompletion tgs.CompletionTags()
+inoremap <silent><buffer> <F5> <C-R>=tags#tagsmain#OrgCompletionTags()<CR>
+command -buffer OrgTagsMenuBuffer tgs.TagsBufferCreation()
+nnoremap <silent><buffer> <Leader>ti :OrgTagsMenuBuffer<CR>
+#  }}}
 #  }}}
 # Custom function tests {{{
 # Declaramos una función llamada `ShowPopupWindow` que se encargará de crear la ventana
@@ -215,12 +247,6 @@ def ShowPopupMenu() # {{{
 enddef # }}}
 
 #  }}}
-# Testing commands {{{
-command -buffer OrgTableCreate tbl.OrgInsertTable()
-command -buffer OrgTableAddColumn tbl.OrgAddColumn()
-command -buffer -nargs=* OrgMenuCreation org_normal.Bufmenucreate(<q-args>)
-command -buffer Orgaugrps org_normal.TestExportandBypass()
-#  }}}
 # Mapping creations {{{
 # Symbolic mapping creations with <Plug> {{{
 map <buffer> <Plug>OrgTDTogRight       :OrgTODOToggleRight<CR>
@@ -275,3 +301,6 @@ nnoremap <leader>oj :OrgJournalOpen<CR>
 #  }}}
 # Autocmds {{{
 #  }}}
+sbmnu.CountAllHeaders()
+tgs.CreateTags()
+# sbmnu.HeaderSubmenu()
