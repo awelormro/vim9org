@@ -11,11 +11,11 @@ export def OrgSearchPrevHead() # {{{
   echo ""
 enddef # }}}
 export def OrgSearchNextLink() # {{{
-  search('\[\[')
+  search('[[', 'e')
   echo ""
 enddef #  }}}
 export def OrgSearchPrevLink() # {{{
-  search('\[\[', 'b')
+  search('[[', 'be')
   echo ""
 enddef # }}}
 export def OrgEnterLink() # {{{
@@ -147,7 +147,11 @@ def ValidateLink(): list<any>  # {{{
   return data_in_link
 enddef
 # }}}
-def EnterFileInLink() # {{{
+def EnterFileInLink(data: list<any>) # {{{
+  var link_for_file = data[2][0]
+  if link_for_file =~ "^\~/"
+    execute "e " .. link_for_file
+  endif
 enddef # }}}
 def GenerateCommandInLink(data: list<any>) # {{{
   if len(data) > 2
@@ -158,16 +162,61 @@ def GenerateCommandInLink(data: list<any>) # {{{
       exe 'lua ' .. data[2][0][4 :]
     elseif data[2][0] =~ '^python:'
       exe 'py3 ' .. data[2][0][5 :]
+    elseif data[2][0] =~ '^shell:'
+      exe '!' .. data[2][0][5 :]
+    else
+      EnterInternalLink(data)
     endif
   endif
 enddef # }}}
-def EnterInternalLink() # {{{
+def EnterInternalLink(data: list<any>) # {{{
+  if search("<<" .. data[2][0] .. ">>", 'n') > 0
+    search("<<" .. data[2][0] .. ">>")
+  elseif search("#+NAME: " .. data[2][0], 'n') > 0
+    search( "#+NAME: " .. data[2][0] )
+  else
+    EnterFileInLink(data)
+  endif
 enddef # }}}
 export def EnterToLink() # {{{
+  if !exists('g:org_prev_history')
+    g:org_prev_history = [ expand('%') ]
+  endif
+  if len(g:org_prev_history) == 0
+    add(g:org_prev_history, expand('%'))
+  endif
   var link_info = ValidateLink()
   # echo link_info
-  if link_info[2][0] =~ '^\a*:'
+  var this_curr_path = expand('%:p:h')
+  # echo this_curr_path
+  if link_info[2][0] =~ '^\~' || link_info[2][0] =~ '^/home'
+    # echo 'File link, enter to file'
+    if link_info[2][0] =~ '.org$'
+      add(g:org_prev_history, link_info[2][0])
+    endif
+    execute 'e ' .. link_info[2][0]
+    return
+  elseif link_info[2][0] =~ '.\a*$'
+    # echo 'External file in path, opening'
+    execute 'e ' .. this_curr_path .. link_info[2][0]
+    return
+  endif
+  if link_info[2][0] =~ '^\a*'
     # echo 'going to start the command'
     GenerateCommandInLink(link_info)
+  # else
+  endif
+enddef # }}}
+export def GoBackLink() # {{{
+  if !exists('g:org_delete_buffer_on_back')
+    g:org_delete_buffer_on_back = 0
+  endif
+  if g:org_delete_buffer_on_back == 0
+    exe 'b ' .. g:org_prev_history[-2]
+    remove(g:org_prev_history, -1)
+  elseif g:org_delete_buffer_on_back == 1
+    exe 'bd!'
+    exe 'e ' .. g:org_prev_history[-2]
+    remove(g:org_prev_history, -1)
   endif
 enddef # }}}

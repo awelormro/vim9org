@@ -1,3 +1,8 @@
+" vim: set fdm=marker:
+" vim: set nospell:
+if !has('vim9script') || g:org_backend != 'vim9script'
+  finish
+endif
 vim9script
 # vim: set foldmethod=marker: 
 # Exporter Settings {{{

@@ -40,3 +40,37 @@ export def ReadAgendaFiles() # {{{
     line_num += 1
   endfor
 enddef #  }}}
+export def AgendaReadFiles() # {{{
+  # Declare variables, create agenda files in case to be necessary {{{
+  if !exists('g:org_agenda_files')
+    g:org_agenda_files = [ expand('~/orgagenda.org') ]
+  endif
+  if !exists('g:org_agenda_folder')
+    g:org_agenda_folders = [ expand( '~/agendadir/' )]
+  endif
+  var agendafiles = [] # Variable used to generate volatile agenda lists
+  var allagendafiles = [  ] # Variable used to store all the information
+  var todoheaders = [] # variable containing all the headers.
+  var buf_content = [ ]
+  var buf_header = []
+  # }}}
+  # Generate the entries for all the agenda files in one variable {{{
+  for agendapath in g:org_agenda_folders
+    agendafiles = readdir( agendapath,  (n: string) =>  n =~ '.org$'  )
+    # agendafiles = readdir( agendapath )
+    allagendafiles = extend( allagendafiles, agendafiles )
+  endfor
+  echo allagendafiles
+  for agendafile in g:org_agenda_files
+    allagendafiles = add( allagendafiles, agendafile )
+  endfor # }}}
+  # Read every file and check if it has the asterisk at the very start {{{
+  for agendafile in allagendafiles
+    buf_content = readfile(agendafile)
+    for cont_buf in buf_content
+      if cont_buf =~ '^\*'
+        add(buf_header, cont_buf)
+      endif
+    endfor
+  endfor  # }}}
+enddef # }}}
