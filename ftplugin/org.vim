@@ -1,16 +1,19 @@
 " vim: set fdm=marker:
 " vim: set nospell:
 " Start all before vim9script {{{ 
-
 if !has('vim9script') || g:org_backend != 'vim9script'
   if !exists('b:current_syntax')
     finish
   endif
   let b:current_syntax = 'org'
+  let b:org_heading_actuallevel = 0
+  setlocal textwidth=80
   if g:org_backend == 'python'
     python3 import starter
     py3 import folding
     python3 starter.StartOrgpy()
+    python3 ntcodeblockcheap = True
+    python3 actualheader = 0
     set foldmethod=expr
     " set foldexpr=OrgFoldWithPython()
     set foldexpr=OrgFolding1()
@@ -67,6 +70,7 @@ if !has('vim9script') || g:org_backend != 'vim9script'
   " }}}
   finish
 endif " }}}
+
 vim9script 
 # {{{
 import autoload "starters/startvim9.vim" as vim9start
