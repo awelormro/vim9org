@@ -21,6 +21,8 @@ def RestoreHeaderLevel():
             break
         else:
             linenum -= 1
+    if linenum == 0:
+        actualheader = 0
 
 
 def CommandsHeads():

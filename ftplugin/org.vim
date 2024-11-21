@@ -1,78 +1,95 @@
-" vim: set fdm=marker:
 " vim: set nospell:
-" Start all before vim9script {{{ 
-if !has('vim9script') || g:org_backend != 'vim9script'
-  if !exists('b:current_syntax')
-    finish
-  endif
-  let b:current_syntax = 'org'
-  let b:org_heading_actuallevel = 0
-  setlocal textwidth=80
-  if g:org_backend == 'python'
-    python3 import starter
-    py3 import folding
-    python3 starter.StartOrgpy()
-    python3 ntcodeblockcheap = True
-    python3 actualheader = 0
-    set foldmethod=expr
-    " set foldexpr=OrgFoldWithPython()
-    set foldexpr=OrgFolding1()
-  elseif g:org_backend == 'lua' 
-    echo 'will act in lua'
-  elseif g:org_backend == 'legacy'
-    echo 'Will act as vimscript'
+" vim: set foldmethod=marker:
+" Selectors previously to vim9script {{{
+if has('nvim')
+  call vimlegacy#orgstarters#Vimscriptstart()
+  setlocal foldexpr=OrgFolding()
+  if has('python3') && g:org_backend == 'python'
+    command -buffer OrgRestoreHead  call indenting#ResetOrgHeading()
+    " setlocal foldexpr=OrgFoldWithPython()
+    setlocal indentexpr=indenting#GetOrgIndentWithPython()
+  elseif g:org_backend == 'lua'
+    lua previndent = 0
+    setlocal indentexpr=indenting#GetOrgIndentWithLua()
   else
-    echo 'Will act as vimscript'
+    setlocal indentexpr=indenting#OrgIndenter()
   endif
-  " Folding function in vimscript {{{ 
-  " 
-  function! Ntcodeblock(x)
-    return synIDattr(synID(a:x, 1, 1), 'name') !=# 'OrgCodeBlock'
-  endfunction
-  function! OrgFolding1() abort
-    let line = getline(v:lnum)
-    if line =~ '^\s*:PROPERTIES:$'
-      return "a7"
-    endif
-    if line =~ '^\s*:END:$'
-      return 's7'
-    endif
-    if line =~ "#+BEGIN_"
-      return "a7"
-    endif
-    if line =~ "#+END_"
-      return "s7"
-    endif
-    if line =~ " {{{"
-      return "a7"
-    endif
-    if line =~ " }}}"
-      return "s7"
-    endif
-    if line =~# '^\*\+ ' && Ntcodeblock(v:lnum)
-      return ">" .. match(line, ' ')
-    endif
-    if (line =~ '^.\+$') && (nextline =~ '^=\+$') && Ntcodeblock(v:lnum + 1)
-      return ">1"
-    endif 
-    if (line =~ '^.\+$') && (nextline =~ '^-\+$') && Ntcodeblock(v:lnum + 1)
-      return ">2"
-    endif
-    return '='
-  endfunction
-  " }}}
-  " Attempt to use python {{{
-  function! OrgFoldWithPython() abort
-    python3 import folding
-    let stringback = py3eval('folding.OrgFolding()')
-    return stringback
-  endfunction
-  " }}}
   finish
-endif " }}}
+elseif v:version < 900
+  call vimlegacy#orgstarters#Vimscriptstart()
+  setlocal foldexpr=OrgFolding()
+  if has('python3') && g:org_backend == 'python'
+    command -buffer OrgRestoreHead  call indenting#ResetOrgHeading()
+    " setlocal foldexpr=OrgFoldWithPython()
+    setlocal indentexpr=indenting#GetOrgIndentWithPython()
+  elseif has('lua') && g:org_backend == 'lua'
+    lua previndent = 0
+    setlocal indentexpr=indenting#GetOrgIndentWithLua()
+  else
+    " setlocal foldexpr=OrgFolding()
+    setlocal indentexpr=indenting#OrgIndenter()
+  endif
+  finish
+elseif exists('g:org_backend') && g:org_backend != 'vim9script'
+  call vimlegacy#orgstarters#Vimscriptstart()
+  setlocal foldexpr=OrgFolding()
+  if has('python3') && g:org_backend == 'python'
+    command -buffer OrgRestoreHead  call indenting#ResetOrgHeading()
+    " setlocal foldexpr=OrgFoldWithPython()
+    setlocal indentexpr=indenting#GetOrgIndentWithPython()
+  elseif has('lua') && g:org_backend == 'lua'
+    lua previndent = 0
+    setlocal indentexpr=indenting#GetOrgIndentWithLua()
+  else
+    " setlocal foldexpr=OrgFolding()
+    setlocal indentexpr=indenting#OrgIndenter()
+  endif
+  finish
+endif
+" }}}
+vim9script
+# Vim9script add starters and import stuff {{{
+import autoload 'vim9/starter9org.vim' as startorg
+g:org_backend = 'vim9script'
+b:current_syntax = 'org'
+startorg.Starter9org()
 
-vim9script 
-# {{{
-import autoload "starters/startvim9.vim" as vim9start
-vim9start.Startvim9()
+
 # }}}
+# Vim9script fold function {{{
+
+
+def OrgFold9s(lnum: number): string
+  # echo 1
+  var Ntcodeblock = (x) => synIDattr(synID(x, 1, 1), 'name') !=# 'OrgCodeBlock'
+  var line = getline(v:lnum)
+  var lnum_end = -10
+  var nextline = getline(v:lnum + 1)
+  if line =~# '^\s*:PROPERTIES:$'
+    return "a7"
+  elseif line =~# '^\s*:END:$'
+    return 's7'
+  elseif line =~# "#+BEGIN_"
+    return "a7"
+  elseif line =~# "#+END_"
+    return "s7"
+  elseif line =~# " {{{"
+    return "a7"
+  elseif line =~# " }}}"
+    return "s7"
+  endif
+  if line =~# '^\*\+ ' && Ntcodeblock(v:lnum)
+    return ">" .. match(line, ' ')
+  endif
+  if (line =~ '^.\+$') && (nextline =~ '^=\+$') && Ntcodeblock(v:lnum + 1)
+    return ">1"
+  endif 
+  if (line =~ '^.\+$') && (nextline =~ '^-\+$') && Ntcodeblock(v:lnum + 1)
+    return ">2"
+  endif
+  return "="
+enddef
+
+
+setlocal foldmethod=expr
+setlocal foldexpr=OrgFold9s(v:lnum)
