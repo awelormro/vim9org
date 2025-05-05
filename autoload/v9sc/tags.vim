@@ -38,8 +38,9 @@ export def Parser_for_tags()
     # }}}
     elseif linec =~ '^#+TAGS:\s'
       tokens_line = Tokenize_lines(linec)
-      tags_line = 
+      tags_line = Extract_tags(tokens_line)
       add(b:buffer_tags, tokens_line)
+      # echo b:buffer_tags
     endif
     i += 1
   endwhile
@@ -189,10 +190,15 @@ def Extract_tags(tokens: list<any>): list<any> # {{{
   var hierarchy_leader = true
   var value_kinds = []
   var list_tags = []
+  var normal_tags = []
+  var tag = {}
   var i = 0
   var len_kinds = 0
   var hierarchy = false
   var excludant = false
+  var colon_present = false
+  var parent_tag = false
+  var parent_tag_pos = 0
   # }}}
   # Read all conditions, echo error if not conditions {{{
   for token in tokens
@@ -206,10 +212,69 @@ def Extract_tags(tokens: list<any>): list<any> # {{{
   endif
   # }}}
   # Generate dictionary for easy  {{{
-  for kind in list_kinds
+  while i < len_kinds
+    # Starting group {{{
+    if list_kinds[i] == 'start_group'
+      if !excludant
+        excludant = true
+        i += 1
+        continue
+      else
+        echoerr 'check syntax'
+        return []
+      endif
+    # }}}
+    # End group {{{
+    elseif list_kinds[i] == 'end_group'
+    # }}}
+    elseif list_kinds[i] == 'start_hierarchy'
+    elseif list_kinds[i] == 'end_hierarchy'
+    # Colon presence {{{
+    elseif list_kinds[i] == 'colon'
+      if !colon_present && (hierarchy || excludant)
+        if parent_tag
+          colon_present = true
+          i += 1
+        else
+          echoerr 'Check syntax'
+          return []
+        endif
+        continue
+      else
+        echoerr 'check syntax'
+        return []
+      endif
+    # }}}
+    # Word management {{{
+    elseif list_kinds[i] == 'word'
+      if hierarchy || excludant
+        if !colon_present
+          parent_tag = true
+          parent_tag_pos = i
+        elseif parent_tag && colon_present
+
+        elseif !parent_tag && colon_present
+          echoerr 'check syntax'
+          return []
+        endif
+      endif
+    # }}}
+    else
+      echoerr 'syntax error'
+      list_tags == []
+    endif
     i += 1
-  endfor
+  endwhile
   # }}}
   return list_tags
-enddef # }}}
+enddef
+# }}}
+# }}}
+#
+# Function for add tags from a list with hierarchy or order {{{
+def Extract_hierarchy_tags(tokens_list: list<any>): list<any>
+  var list_tags = []
+  var tg = {}
+  return []
+enddef
 # }}}

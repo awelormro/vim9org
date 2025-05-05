@@ -1,0 +1,52 @@
+digraph TestBonito{
+  splines=ortho;
+  node [shape=box];
+  edge [headport=n, tailport=s];
+  rankdir=TB;
+
+  inicio [label="Cosa"];
+  ghost1 [shape=point, width=0, height=0 label=""];
+  read;
+  check;
+  inicio -> ghost1 [arrowhead=none];
+  ghost1 -> read;
+  ghost1 -> check;
+}
+//* digraph LexerFlow { */
+//*   splines=ortho;       // Líneas rectas */
+//*   node [shape=box, fontname="Courier New"]; */
+//*   rankdir=TB;          // Flujo vertical */
+//*   newrank=true; */
+
+//*   // Nodos principales */
+//*   start [label="Inicio", shape=ellipse]; */
+//*   init [label="Inicializar estado"]; */
+//*   read [label="Leer próximo carácter"]; */
+//*   check [label="¿Es carácter válido?"]; */
+//*   token [label="Generar token"]; */
+//*   error [label="Error léxico", shape=diamond, color=red]; */
+//*   end [label="Fin", shape=ellipse]; */
+
+//*   // Nodos fantasma */
+//*   ghost1 [shape=point, width=0, height=0, label=""]; */
+//*   ghost2 [shape=point, width=0, height=0, label=""]; */
+
+//*   // Conexiones principales */
+//*   start -> init; */
+//*   init -> read; */
+//*   read -> check; */
+
+//*   // Decisiones con xlabel (en lugar de label) */
+//*   check -> ghost1 [dir=none, headport=n];  // headport=n: conecta al norte del nodo fantasma */
+//*   ghost1 -> token [xlabel="Sí", fontsize=10]; */
+//*   ghost1 -> error [xlabel="No", fontsize=10]; */
+
+//*   // Loop y fin */
+//*   token -> ghost2 [dir=none]; */
+//*   ghost2 -> read [xlabel="Siguiente carácter", fontsize=10]; */
+//*   ghost2 -> end [xlabel="Fin de entrada", fontsize=10]; */
+
+//*   // Alineación */
+//*   { rank=same; ghost1; check; } */
+//*   { rank=same; ghost2; token; } */
+//* } */

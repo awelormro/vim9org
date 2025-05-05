@@ -50,38 +50,89 @@ finish
 endif
 " }}}
 vim9script
-# Vim9script start {{{
+# def OrgFold9s(lnum: number): string
+#   if mode() == 'i'  # Si estamos en modo inserción, retornar un valor cacheado
+#     return get(b:, 'cached_fold_' . lnum, 0)
+#   endif
+#   var Ntcodeblock = (x) => synIDattr(synID(x, 1, 1), 'name') !=# 'OrgCodeBlock'
+#   var line = getline(v:lnum)
+#   var lnum_end = -10
+#   var nextline = getline(v:lnum + 1)
+#   if line =~# '^\s*:PROPERTIES:$'
+#     return "a7"
+#   elseif line =~# '^\s*:END:$'
+#     return 's7'
+#   elseif line =~# "#+BEGIN_"
+#     return "a7"
+#   elseif line =~# "#+END_"
+#     return "s7"
+#   elseif line =~# " {{{"
+#     return "a7"
+#   elseif line =~# " }}}"
+#     return "s7"
+#   endif
+#   if line =~# '^\*\+ ' && Ntcodeblock(v:lnum)
+#     return ">" .. match(line, ' ')
+#   endif
+#   if (line =~ '^.\+$') && (nextline =~ '^=\+$') && Ntcodeblock(v:lnum + 1)
+#     return ">1"
+#   endif 
+#   if (line =~ '^.\+$') && (nextline =~ '^-\+$') && Ntcodeblock(v:lnum + 1)
+#     return ">2"
+#   endif
+#   return "="
+# enddef
+
 def OrgFold9s(lnum: number): string
-  # echo 1
+  # Cachear folds durante inserción o si ya está calculado
+  if mode() == 'i' || exists('b:fold_cache_enabled') && b:fold_cache_enabled
+    if !exists('b:fold_cache')
+      b:fold_cache = {}
+    endif
+    if has_key(b:fold_cache, lnum)
+      return b:fold_cache[lnum]
+    endif
+    # Si no está en caché, calcular y guardar (solo primera vez en inserción)
+    var foldval = CalculateRealFold(lnum)
+    b:fold_cache[lnum] = foldval
+    return foldval
+  endif
+  # Limpiar caché al salir del modo inserción
+  return CalculateRealFold(lnum)
+enddef
+
+def CalculateRealFold(lnum: number): string
   var Ntcodeblock = (x) => synIDattr(synID(x, 1, 1), 'name') !=# 'OrgCodeBlock'
-  var line = getline(v:lnum)
-  var lnum_end = -10
-  var nextline = getline(v:lnum + 1)
-  if line =~# '^\s*:PROPERTIES:$'
+  var line = getline(lnum)
+  var nextline = getline(lnum + 1)
+
+  if line =~# '^\s*:PROPERTIES:$' || line =~# "#+BEGIN_" || line =~# " {{{"
     return "a7"
-  elseif line =~# '^\s*:END:$'
-    return 's7'
-  elseif line =~# "#+BEGIN_"
-    return "a7"
-  elseif line =~# "#+END_"
+  elseif line =~# '^\s*:END:$' || line =~# "#+END_" || line =~# " }}}"
     return "s7"
-  elseif line =~# " {{{"
-    return "a7"
-  elseif line =~# " }}}"
-    return "s7"
-  endif
-  if line =~# '^\*\+ ' && Ntcodeblock(v:lnum)
+  elseif line =~# '^\*\+ ' && Ntcodeblock(lnum)
     return ">" .. match(line, ' ')
-  endif
-  if (line =~ '^.\+$') && (nextline =~ '^=\+$') && Ntcodeblock(v:lnum + 1)
+  elseif (line =~ '^.\+$') && (nextline =~ '^=\+$') && Ntcodeblock(lnum + 1)
     return ">1"
-  endif 
-  if (line =~ '^.\+$') && (nextline =~ '^-\+$') && Ntcodeblock(v:lnum + 1)
+  elseif (line =~ '^.\+$') && (nextline =~ '^-\+$') && Ntcodeblock(lnum + 1)
     return ">2"
   endif
   return "="
 enddef
 
+# Activar/desactivar caché automáticamente
+augroup OrgFoldCache
+  autocmd!
+  autocmd InsertEnter * {
+    b:fold_cache_enabled = 1
+    b:fold_cache = {}  # Resetear caché al entrar en inserción
+  }
+  autocmd InsertLeave * {
+    b:fold_cache_enabled = 0
+    b:fold_cache = {}  # Limpiar caché al salir
+    setlocal foldmethod=expr  # Forzar actualización
+  }
+augroup END
 
 setlocal foldmethod=expr
 setlocal foldexpr=OrgFold9s(v:lnum)
