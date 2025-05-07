@@ -1,0 +1,25 @@
+digraph TestBonito{
+
+  splines=ortho;
+  node [shape=box];
+  edge [headport=n, tailport=s];
+  rankdir=TB;
+
+  nodo00 [label="2 Document Structure"];
+  ghost1 [shape=point, width=0, height=0, label=""];
+  nodo01 [label="2.1 Headlines"];
+  nodo02 [label="2.2 Visibility Cycling"];
+  nodo03 [label="2.2.1 Global and local cycling"];
+  nodo04 [label="2.2.2 Initial visibility"];
+  nodo05 [label="2.2.3 Catching invisible edits"];
+  nodo06 [label="2.3 Motion"];
+  nodo07 [label="2.4 Structure Editing"];
+  nodo08 [label="2.5 Sparse Trees"];
+  nodo09 [label="2.6 Plain Lists"];
+  nodo10 [label="2.7 Drawers"];
+  nodo11 [label="2.8 Blocks"];
+  nodo00 -> ghost1 [arrowhead=none];
+  ghost1 -> {nodo01 nodo02 nodo03 nodo04 nodo05 nodo06 nodo07 nodo08 nodo09 nodo10 nodo11}
+}
+
+

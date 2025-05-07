@@ -10,6 +10,7 @@ vim9script
 # import files {{{
 import autoload "v9sc/searchers.vim" as srch
 import autoload "v9sc/tags.vim" as tgs
+import autoload "v9sc/parser.vim" as parse
 # }}}
 # Command creations {{{
 command -buffer OrgSearchNextHeader srch.Find_next_header()
@@ -19,6 +20,8 @@ command -buffer OrgSearchPrevLink   srch.Find_prev_link()
 command -buffer OrgSearchNextCite   srch.Find_next_cite()
 command -buffer OrgSearchPrevCite   srch.Find_prev_cite()
 command -buffer OrgAllTags          tgs.Parser_for_tags()
+command -buffer OrgTestTokens       parse.Generate_tokens(getline('.'))
+command -buffer OrgTestParsing       parse.Tags_parser_line(getline('.'))
 
 # }}}
 # Plug mapping creations {{{

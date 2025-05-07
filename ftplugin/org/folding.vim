@@ -50,6 +50,7 @@ finish
 endif
 " }}}
 vim9script
+
 # def OrgFold9s(lnum: number): string
 #   if mode() == 'i'  # Si estamos en modo inserción, retornar un valor cacheado
 #     return get(b:, 'cached_fold_' . lnum, 0)
@@ -123,11 +124,11 @@ enddef
 # Activar/desactivar caché automáticamente
 augroup OrgFoldCache
   autocmd!
-  autocmd InsertEnter * {
+  autocmd InsertEnter *.org {
     b:fold_cache_enabled = 1
     b:fold_cache = {}  # Resetear caché al entrar en inserción
   }
-  autocmd InsertLeave * {
+  autocmd InsertLeave *.org {
     b:fold_cache_enabled = 0
     b:fold_cache = {}  # Limpiar caché al salir
     setlocal foldmethod=expr  # Forzar actualización

@@ -1,0 +1,92 @@
+digraph Diagram{
+  splines=ortho
+
+  inicio [label="Inicio" shape="ellipse"];
+  loopback
+  n1 [
+      label="Lectura de línea
+    i=0
+    lenlinea"
+      shape="box"
+   ];
+  n2 [
+      label="¿i <\nlenlinea?"
+      shape="diamond"
+     ];
+  n3 [
+      label="¿linea[i] es \w?"
+      shape="diamond"
+  ];
+  n4 [
+    label="¿linea[i] es\n[]{}()?"
+    shape="diamond"
+  ];
+  n5 [
+    label="linea[i] es ;:,."
+    shape="diamond"
+  ];
+  n6 [
+    label="linea[i] es\nnumero?"
+    shape="diamond"
+  ];
+  n8 [
+    label="linea[i] es \n# \\/?¿!¡"
+    shape="diamond"
+  ];
+  n7 [
+    label="linea[i] es espacio?"
+    shape="diamond"
+  ];
+  n9 [
+    label="Tokenizado de palabra"
+    shape="box"
+  ]
+  n10 [
+    label="Tokenizado de paréntesis"
+    shape="box"
+  ]
+  n11 [
+    label="Tokenizado de puntuación"
+    shape="box"
+  ]
+  n12 [
+    label="Tokenizado de número"
+    shape="box"
+  ]
+  n13 [
+    label="Tokenizado de símbolo general"
+    shape="box"
+  ]
+  n14 [
+    label="Tokenizado de espacio"
+    shape="box"
+  ]
+  n15 [
+    label="Tokenizado de otros"
+    shape="box"
+  ]
+  inicio -> n1
+  n1  -> n2
+  n2  -> n3  [label="Sí"]
+  n3  -> n9  [label="Sí"]
+  n3  -> n4  [label="No"]
+  n4  -> n10 [label="Sí"]
+  n4  -> n5  [label="No"]
+  n5  -> n11 [label="Sí"]
+  n5  -> n6  [label="No"]
+  n6  -> n8  [label="No"]
+  n6  -> n12 [label="Sí"]
+  n8  -> n7  [label="No"]
+  n7  -> n14 [label="Sí"]
+  n8  -> n13 
+  n7  -> n15 [label="No"]
+  {n9 n10 n11 n12 n13 n14 n15 } -> loopback
+  loopback -> n2
+  {rank=same n3 n9 loopback}
+  {rank=same n4 n10}
+  {rank=same n5 n11}
+  {rank=same n6 n12}
+  {rank=same n8 n13}
+  {rank=same n7 n15}
+}
+
