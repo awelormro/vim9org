@@ -1,0 +1,48 @@
+digraph Parser{
+  splines=ortho;
+  node [shape=box];
+  edge [headport=n, tailport=s];
+  rankdir=TB;
+  start [shape=ellipse];
+  variables [label="
+  Ints
+- i=0
+- count_main_words=0
+  Lists:
+- tokens: token structure\n[kind,value]
+- tag_generated
+- word_starters=[word, number, underscore, at]
+- tags_excludant
+- tag_main
+  bools
+- main_string
+- hierarchy
+- excludant
+- colon
+  "];
+  loopback [shape=circle, label="1"];
+  node01 [shape=diamond, label="i < len_tokens?"]
+  node02 [shape=diamond, label="hierarchy &\nexcludant = true?"]
+  node03 [shape=diamond, label="hierarchy &\nexcludant = false\n&token[i][kind] is in\n word_starters?"]
+  node04 [shape=diamond, label="hierarchy=true &\nexcludant = false\n&token[i][kind] is {?"]
+  node05 [shape=diamond, label="hierarchy &\nexcludant = false\n&token[i][kind] is [?"]
+  node06 [shape=diamond, label="hierarchy =false &\nexcludant = true\n& token[i][kind] is {?"]
+  node07 [shape=diamond, label="hierarchy=true &\nexcludant = false \n& token[i][kind] is :?"]
+  node08 [shape=diamond, label="hierarchy=true &\nexcludant = false\n& token[i][kind] is space?"]
+  node09 [shape=diamond, label="hierarchy &\nexcludant = true?"]
+  node10 [shape=diamond, label="hierarchy=true &\nexcludant = false\n&token[i][kind] is {?"]
+  node11 [shape=diamond, label="hierarchy &\nexcludant = false\n&token[i][kind] is [?"]
+  inicio -> variables
+  variables -> node01
+  loopback -> node01 [headport=w, tailport=e]
+  node01 -> node02 [label="no"]
+  node02 -> node03 [label="no"]
+  node03 -> node04 [label="no"]
+  node04 -> node05 [label="no"]
+  node05 -> node06 [label="no"]
+  node06 -> node07 [label="no"]
+  node07 -> node08 [label="no"]
+  node08 -> node09 [label="no"]
+
+  {rank=same loopback node01}
+}

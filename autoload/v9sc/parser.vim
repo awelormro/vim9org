@@ -7,7 +7,12 @@ endif
 " }}}
 " vim 9 script section {{{
 vim9script
+import autoload "v9sc/tokenizers.vim" as tokenizer
 # Parsers {{{
+# Error list on tags{{{
+# E001: Invalid tags syntax
+# E002: Unclosed tags hierarchy
+# }}}
 export def Tag_parsing_header(): list<any> # {{{
   var tags_header = []
   var i = 0
@@ -29,234 +34,323 @@ export def Tag_parsing_header(): list<any> # {{{
   return tags_header
 enddef # }}}
 export def Tags_parser_line(lin: string): list<any> # {{{
-  var tags = []
-  var all_tags_line = []
-  var token_kinds = []
-  var content_tokens = []
+  # Variable declarations {{{
+  var tokens = tokenizer.General_Tokenizer(lin)
+  var tokens_wo_head = tokens[5 :]
+  var joined_tokens = Parse_words(tokens_wo_head, 0)
+  var work_tokens = copy(filter(joined_tokens, 'v:val[0] !~ "space"' ))
+  echo work_tokens
+  var lentokens = len(work_tokens)
+  var begpos = -1000
+  var endpos = -1000
+  var tags_add = []
+  var exit_tags = []
   var i = 0
-  var string_to_tokenize = trim(lin[ 7 : ])
-  echo string_to_tokenize
-  var tokens = Generate_tokens(string_to_tokenize)
-  var filtered_tokens = filter(copy(tokens), 'v:val[0] != "space"')
-  # echo filtered_tokens
-  var len_tokens = len(filtered_tokens)
-  while i < len_tokens
-    if tokens[i][0] == 'opcurbracket'
-      # echo 'start exclusive tags at ' .. i .. ' pos'
-      tags = Parse_excludant(filtered_tokens, i)
-      add(all_tags_line, tags[0])
-      i = tags[1]
+  # }}}
+  # Loop for sparse tokens {{{
+  while i <= lentokens - 1
+    if work_tokens[i][0] == 'tag'
+      tags_add = Parse_regular(work_tokens, i, 'word')
+      exit_tags += [tags_add[0]]
+      i = tags_add[1]
+      echo tags_add
       continue
-    elseif tokens[i][0] == 'opsqbracket'
-      echo 'start hierarchy tags'
-    #   tags = Parse_hierarchy_tags(tokens, i)
-    #   add(all_tags_line, tags[0])
-    #   i = tags[1]
-    #   continue
-    # elseif tokens[i][0] == 'word'
-    #   tags = Parse_regular(tokens, i)
-    #   add(all_tags_line, tags[0])
-    #   i = tags[1]
-    #   continue
-    # elseif tokens[i][0] == 'space'
-    #   i += 1
-    #   continue
-    # elseif tokens[i][0] == 'colon'
-    #   Parse_regular_colon_sep(tokens, i)
-    #   add(all_tags_line, tags[0])
-    #   i = tags[1]
-    #   continue
+    elseif work_tokens[i][0] == 'opcurbracket'
+      tags_add = Parse_excludant(work_tokens, i)
+      echo tags_add
+      exit_tags += tags_add[0]
+      i = tags_add[1]
+      i += 1
+      continue
+    elseif work_tokens[i][0] == 'opsqbracket'
+      tags_add = Parse_hierarchy(work_tokens, i)
+      exit_tags += tags_add[0]
+      i = tags_add[1]
+      continue
+    elseif work_tokens[i][0] == 'colon'
+      tags_add = Parse_alltags(work_tokens, i)
+    else
+      echoerr 'E001: Invalid tags syntax'
+      i += 1
+    endif
+  endwhile
+  # }}}
+  return exit_tags
+enddef # }}}
+def Parse_alltags(tokens: list<any>, pos: number): list<any> #  {{{
+  var i = pos
+  var colon = false
+  var word = false
+  var export_string = ''
+  var lentokens = len(tokens)
+  var tag_export = {"name": '',
+    'kind': 'alltags',
+    'mapping': '',
+    'before': '',
+    'excludant': [],
+    'after': []
+  }
+  while i < lentokens
+    if i == lentokens - 1 && tokens[i][0] == colon
+      return [tag_export, i]
+    elseif colon && !word && tokens[i][0] == 'tag'
+      export_string ..= tokens[i][1]
+      word = true
+      colon = false
+    elseif !colon && word && tokens[i][0] == 'colon'
+      export_string ..= tokens[i][1]
+      word = false
+      colon = true
+    else
+      echo export_string
+      break
+      tag_export["name"] = export_string
+      return [tag_export, i]
     endif
     i += 1
   endwhile
-  return all_tags_line
-enddef # }}}
-def Parse_regular_colon_sep(tokens: list<any>, pos: number): list<any> # {{{
-enddef # }}}
-def Parse_regular(tokens: list<any>, pos: number): list<any> # {{{
-  var tags = []
-  var i = pos
-  return [tags, i]
-enddef # }}}
-def Parse_excludant(tokens: list<any>, pos: number): list<any> # {{{
-  # { tagmain: tag1 tag2 ... }
-  # Variable declarations {{{
-  var tags = []
-  var words = []
-  var kinds = []
-  var i = pos
-  var j = 0
-  # echo i
-  echo tokens[pos]
-  var tokens_pos = tokens[pos - 1 : - 1]
-  echo tokens_pos
-  # }}}
-  while j < len(tokens_pos)
-    add(words, tokens_pos[j][1])
-    add(kinds, tokens_pos[j][0])
-    j += 1
-  endwhile 
-  var close_excludant = index(kinds, 'clcurbracket', pos)
-  var list_logic_words = words[pos : close_excludant]
-  var list_logic_kinds = kinds[pos : close_excludant]
-  echo list_logic_words
-  echo list_logic_kinds
-  echo words
-  echo kinds
-  return [[], i + 1]
-enddef # }}}
-def Parse_hierarchy_tags(tokens: list<any>, pos: number): list<any> # {{{
-  var tags = []
-  var i = pos
-  return [tags, i]
-enddef # }}}
+  tag_export["name"] = export_string
+  return [tag_export, i]
+enddef
 # }}}
-# Tokenizator {{{
-# Main tokenizer {{{
-export def Generate_tokens(lin: string): list<any>
-  var tokens = []
-  var token = []
-  var aux_token = []
-  var i = 0
-  var len_line = len(lin)
-  # echo lin
-  while i < len_line
-    if lin[i] =~ '\s'
-      aux_token = Space_token(lin, i)
-      token = aux_token[0]
-      i = aux_token[1]
-      add(tokens, token)
-    elseif lin[i] =~ '\a'
-      aux_token = Token_word(lin, i)
-      token = aux_token[0]
-      i = aux_token[1]
-      add(tokens, token)
-    elseif lin[i] =~ '\d'
-      aux_token = Token_number(lin, i)
-      token = aux_token[0]
-      i = aux_token[1]
-      add(tokens, token)
-    else
-      aux_token = Token_symbol(lin[i], i)
-      token = aux_token[0]
-      i = aux_token[1]
-      add(tokens, token)
-    endif
-    # echo token
-  endwhile
-  return tokens
-enddef # }}}
-# Auxiliar functions for tokenization {{{
-def Token_word(line: string, pos: number): list<any> # Tokenization for words {{{
+def Parse_words(tokens: list<any>, pos: number): list<any> #{{{
   var i = pos
-  var word = ''
-  var len_word = len(line)
-  var token = []
-  while i < len_word
-    if line[i] !~ '\a'
-      return [['word', word], i]
-    elseif i == len_word - 1
-      word ..= line[i]
-      return [['word', word], i + 1]
-    else
-      word ..= line[i]
-      i += 1
+  var word_token = ''
+  var token_tag = []
+  var tokens_exit = []
+  var valid_symbols = ['number', 'word', 'at', 'underscore']
+  var len_tokens = len(tokens)
+  while i < len_tokens
+    if i == len_tokens - 1
+      if index(valid_symbols, tokens[i][0]) > -1
+        word_token ..= tokens[i][1]
+        add(tokens_exit, ['tag', word_token])
+        return tokens_exit
+      elseif len(word_token) > 0
+        add(tokens_exit, ['tag', word_token])
+        add(tokens_exit, tokens[i])
+        return tokens_exit
+      endif
     endif
-  endwhile
-  return token
-enddef # }}}
-def Space_token(line: string, pos: number): list<any> # Space tokenization {{{
-  var token = []
-  var i = pos
-  var len_word = len(line)
-  var len_space = 0
-  while i < len_word
-    if line[i] =~ '\s'
-      len_space += 1
+    if index(valid_symbols, tokens[i][0]) > -1
+      word_token ..= tokens[i][1]
       i += 1
       continue
     else
-      return [['space', len_space], i]
+      if len(word_token) > 0
+        add(tokens_exit, ['tag', word_token])
+        word_token = ''
+        add(tokens_exit, tokens[i])
+        i += 1
+        continue
+      else
+        add(tokens_exit, tokens[i])
+        i += 1
+        continue
+      endif
+      continue
     endif
   endwhile
-  return token
+  return tokens_exit
 enddef # }}}
-def Token_number(line: string, pos: number): list<any> # Tokenization for numbers {{{
-  var token = []
-  var i = pos
-  var len_line = len(line)
-  while i < len_line
-    if line[i] =~ '\d'
-      i += 1
-    else
-      return [['number', line[pos : i - 1]], i]
-    endif
-  endwhile
-  return token
-enddef # }}}
-def Token_symbol(symbol: string, pos: number): list<any> # {{{
-  var info = []
-  var token = []
-  var i = pos
-  if symbol == '"'
-    info = ['dquote', '"']
-  elseif symbol == "'"
-    info = ['squote', "'"]
-  elseif symbol == "@"
-    info = ['at', symbol]
-  elseif symbol == "#"
-    info = ['hashtag', symbol]
-  elseif symbol == "$"
-    info = ['dollar', symbol]
-  elseif symbol == "%"
-    info = ['perc', symbol]
-  elseif symbol == "&"
-    info = ['ampers', symbol]
-  elseif symbol == "*"
-    info = ['asterisk', symbol]
-  elseif symbol == "("
-    info = ['opparentheses', symbol]
-  elseif symbol == ")"
-    info = ['clparentheses', symbol]
-  elseif symbol == "["
-    info = ['opsqbracket', symbol]
-  elseif symbol == "]"
-    info = ['clsqbracket', symbol]
-  elseif symbol == "{"
-    info = ['opcurbracket', symbol]
-  elseif symbol == "}"
-    info = ['clcurbracket', symbol]
-  elseif symbol == "-"
-    info = ['hyphen', symbol]
-  elseif symbol == "_"
-    info = ['underscore', symbol]
-  elseif symbol == "\\"
-    info = ['backslash', symbol]
-  elseif symbol == "/"
-    info = ['slash', symbol]
-  elseif symbol == "+"
-    info = ['plus', symbol]
-  elseif symbol == ","
-    info = ['comma', symbol]
-  elseif symbol == "."
-    info = ['period', symbol]
-  elseif symbol == ";"
-    info = ['semicolon', symbol]
-  elseif symbol == ":"
-    info = ['colon', symbol]
-  elseif symbol == ">"
-    info = ['more_than', symbol]
-  elseif symbol == "<"
-    info = ['less_than', symbol]
-  elseif symbol == "="
-    info = ['equal', symbol]
-  else
-    info = ['misc', symbol]
+def Parse_excludant(tags: list<any>, pos: number): list<any> # {{{
+  var i = pos + 1
+  var len_tags = len(tags)
+  var exit_tags = []
+  var exclusion_tags = []
+  var list_exclusion = []
+  var tag_generated = []
+  var sep_list =  0
+  if tags[i][0] == 'tag' && tags[i + 1][0] == 'colon'
+    return Parse_hierarchy_excludant(tags, pos)
   endif
-  token = [info, i + 1]
-  return token
+  while i < len_tags
+    if tags[i][0] == 'clcurbracket'
+      sep_list = i
+      break
+    elseif tags[i][0] == 'tag'
+      tag_generated = Parse_regular(tags, i, 'excludant')
+      add(exit_tags, tag_generated[0])
+      add(list_exclusion, tag_generated[0]["name"])
+      echo tag_generated[0]["name"]
+      i = tag_generated[1]
+      continue
+    endif
+  endwhile
+  i = 0
+  while i < len(exit_tags)
+    exclusion_tags = filter(copy(list_exclusion), 'v:val != "' .. exit_tags[i]["name"] .. '"')
+    exit_tags[i]['excludant'] = exclusion_tags
+    i += 1
+  endwhile
+  return [exit_tags, i + 1]
 enddef # }}}
-
-# }}}
-# }}}
+def Parse_hierarchy_excludant(tags: list<any>, pos: number): list<any> # {{{
+  var len_tags = len(tags)
+  var exit_tags = []
+  var i = pos + 1
+  var colon = false
+  var final_pos = 0
+  var main_string = ''
+  var exclusion_tags = []
+  var tag_gen = []
+  echo tags[i]
+  echo tags[i + 1]
+  if tags[i][0] == 'tag' && tags[i + 1][0] == 'colon'
+    colon = true
+    main_string = tags[i][1]
+    tag_gen = Parse_regular(tags, i, 'main_hierarchy')
+    add(exit_tags, tag_gen[0])
+    i += 2
+  else
+    echoerr 'not valid position'
+    return [[], len(tags) + 1]
+  endif
+  while i < len_tags
+    if tags[i][0] == 'clcurbracket'
+      final_pos = i + 1
+      break
+    elseif tags[i][0] == 'tag'
+      tag_gen = Parse_regular(tags, i, 'less_hierarchy')
+      add(exclusion_tags, tag_gen[0]["name"])
+      add(exit_tags, tag_gen[0])
+      i = tag_gen[1]
+      continue
+    else
+      echoerr 'not valid position'
+      return [[], len(tags) + 1]
+    endif
+  endwhile
+  i = 0
+  var final_exclusion = []
+  while i < len(exit_tags)
+    if i == 0
+      exit_tags[i]["after"] = exclusion_tags
+    else
+      exit_tags[i]["excludant"] = filter(copy(exclusion_tags), 'v:val != "' .. exit_tags[i]["name"] .. '"')
+      exit_tags[i]["before"] = main_string
+    endif
+    i += 1
+  endwhile
+  return [exit_tags, final_pos]
+enddef # }}}
+def Parse_hierarchy(tags: list<any>, pos: number): list<any> # {{{
+  var exit_tags = []
+  var i = pos + 1
+  var pos_sqbracket = -1
+  var len_tags = len(tags)
+  var pos_colon = -1
+  var colon = false
+  var valid_start = false
+  var tag_gen_list = []
+  var list_before = []
+  var main_string = ''
+  var tag_gen = {}
+  var end_tags = false
+  if tags[i][0] == 'tag'
+    valid_start = true
+    tag_gen_list = Parse_regular(tags, i, 'main_hierarchy')
+    tag_gen = tag_gen_list[0]
+    main_string = tag_gen_list[0]['name']
+    i = tag_gen_list[1]
+    add(exit_tags, tag_gen_list[0])
+  else
+    echoerr 'not valid tag'
+    return [[], len(tags)]
+  endif
+  if valid_start && tags[i][0] == 'colon'
+    colon = true
+    i += 1
+  else
+    echoerr 'not sequence for hierarchy tags'
+    return [exit_tags, len(tags)]
+  endif
+  while i < len_tags
+    if tags[i][0] == 'tag'
+      tag_gen_list = Parse_regular(tags, i, 'less_hierarchy')
+      add(list_before, tag_gen_list[0]["name"])
+      add(exit_tags, tag_gen_list[0])
+      i = tag_gen_list[1]
+      continue
+    elseif tags[i][0] == 'opcurbracket'
+      tag_gen_list = Parse_regexp(tags, i)
+      add(list_before, tag_gen_list[0]["name"])
+      add(exit_tags, tag_gen_list[0])
+      i = tag_gen_list[1]
+      continue
+    elseif tags[i][0] == 'clsqbracket'
+      break
+      # return [exit_tags, i + 1]
+    else
+      echoerr "not correct syntax"
+      return [[], len(tags) + 1]
+    endif
+  endwhile
+  exit_tags[0]["after"] = list_before
+  for tag in exit_tags
+    if tag["kind"] == 'less_hierarchy'
+      tag["before"] = main_string
+    endif
+  endfor
+  return [exit_tags, i + 1]
+enddef # }}}
+def Parse_regexp(tags: list<any>, pos: number): list<any> # {{{
+  var tag_export = []
+  var exit_tag = {"name": '',
+    'kind': '',
+    'mapping': '',
+    'before': '',
+    'excludant': [],
+    'after': []
+  }
+  exit_tag["kind"] = 'regexp'
+  var regexp_export = ''
+  var i = pos
+  var len_tags = len(tags)
+  while i < len_tags
+    if tags[i][0] == 'clcurbracket'
+      exit_tag["name"] = regexp_export
+      return [exit_tag, i + 1]
+    elseif tags[i][0] == 'opcurbracket'
+      i += 1
+      continue
+    else
+      regexp_export ..= tags[i][1]
+      i += 1
+      continue
+    endif
+  endwhile
+  return tag_export
+enddef # }}}
+def Parse_regular(tags: list<any>, pos: number, kind_tag: string): list<any> # {{{
+  var tag_export = {"name": '',
+    'kind': '',
+    'mapping': '',
+    'before': '',
+    'excludant': [],
+    'after': []
+  }
+  tag_export["name"] = tags[pos][1]
+  tag_export["kind"] = kind_tag
+  var i = pos
+  var tag_name = ''
+  var mapping = ''
+  var mp = false
+  var ki = kind_tag
+  if pos + 3 <= len(tags) - 1
+    # echo 'possible mapping'
+    if tags[i + 1][0] == 'opparentheses' && 
+        tags[i + 2][0] == 'tag' && 
+        len(tags[i + 2][1]) == 1 && 
+        tags[i + 3][0] == 'clparentheses'
+      # echo 'has mapping'
+      tag_export['mapping'] = tags[pos + 2][1]
+      i = pos + 4
+      return [tag_export, i]
+    endif
+  else
+    return [tag_export, i + 1]
+  endif
+  return [tag_export, i + 1]
+enddef # }}}
 # }}}
