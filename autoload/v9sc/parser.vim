@@ -15,13 +15,15 @@ import autoload "v9sc/tokenizers.vim" as tokenizer
 # }}}
 export def Tag_parsing_header(): list<any> # {{{
   var tags_header = []
+  var tags_line = []
   var i = 0
   var cont_line = ''
   var totlines = line('$')
   while i < totlines
     i += 1
     if getline(i) =~ '^\*'
-      return tags_header
+      break
+      # return tags_header
     else
       cont_line = getline(i)
       if cont_line =~ "#+TAGS: "
@@ -31,6 +33,7 @@ export def Tag_parsing_header(): list<any> # {{{
       i += 1
     endif
   endwhile
+  b:org_tags = tags_header
   return tags_header
 enddef # }}}
 export def Tags_parser_line(lin: string): list<any> # {{{
@@ -69,6 +72,9 @@ export def Tags_parser_line(lin: string): list<any> # {{{
       continue
     elseif work_tokens[i][0] == 'colon'
       tags_add = Parse_alltags(work_tokens, i)
+      exit_tags += [tags_add[0]]
+      i = tags_add[1]
+      continue
     else
       echoerr 'E001: Invalid tags syntax'
       i += 1
@@ -78,7 +84,8 @@ export def Tags_parser_line(lin: string): list<any> # {{{
   return exit_tags
 enddef # }}}
 def Parse_alltags(tokens: list<any>, pos: number): list<any> #  {{{
-  var i = pos
+  # echo tokens
+  var i = pos + 1
   var colon = false
   var word = false
   var export_string = ''
@@ -90,27 +97,16 @@ def Parse_alltags(tokens: list<any>, pos: number): list<any> #  {{{
     'excludant': [],
     'after': []
   }
-  while i < lentokens
-    if i == lentokens - 1 && tokens[i][0] == colon
-      return [tag_export, i]
-    elseif colon && !word && tokens[i][0] == 'tag'
-      export_string ..= tokens[i][1]
-      word = true
-      colon = false
-    elseif !colon && word && tokens[i][0] == 'colon'
-      export_string ..= tokens[i][1]
-      word = false
-      colon = true
+  for tag in tokens
+    if tag[0] == 'colon' || tag[0] == 'tag'
+      export_string ..= tag[1]
     else
-      echo export_string
-      break
-      tag_export["name"] = export_string
-      return [tag_export, i]
+      echoerr 'not valid syntax'
+      return [tag_export, len(tokens)]
     endif
-    i += 1
-  endwhile
+  endfor
   tag_export["name"] = export_string
-  return [tag_export, i]
+  return [tag_export, len(tokens) ]
 enddef
 # }}}
 def Parse_words(tokens: list<any>, pos: number): list<any> #{{{

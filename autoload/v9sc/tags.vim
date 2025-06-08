@@ -4,7 +4,8 @@ if !has('vim9script')
   finish
 endif
 vim9script
-# Parser creation {{{
+import autoload "v9sc/tokenizers.vim" as token
+# 󰡷 Parser creation {{{
 export def Parser_for_tags()
   # Variable declarations {{{
   var linec = '' # Used
@@ -47,7 +48,7 @@ export def Parser_for_tags()
   # }}}
 enddef
 # }}}
-# Auxiliar functions for parser {{{
+# 󰊕 Auxiliar functions for parser {{{
 def Tokenize_lines(line_cont: string): list<any> # {{{
   # Variable declarations {{{
   var tokens_list = []
@@ -270,11 +271,18 @@ def Extract_tags(tokens: list<any>): list<any> # {{{
 enddef
 # }}}
 # }}}
-#
-# Function for add tags from a list with hierarchy or order {{{
+# 󱚀 Function for add tags from a list with hierarchy or order {{{
 def Extract_hierarchy_tags(tokens_list: list<any>): list<any>
   var list_tags = []
   var tg = {}
   return []
 enddef
 # }}}
+export def Org_Header_Extractor()
+  var header_number = search('^\*', 'nbW')
+  var header_string = getline(header_number)
+  var header_tokens = token.General_Tokenizer(header_string)
+enddef
+
+export def Org_Tags_Extractor()
+enddef

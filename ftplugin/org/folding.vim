@@ -51,38 +51,6 @@ endif
 " }}}
 vim9script
 
-# def OrgFold9s(lnum: number): string
-#   if mode() == 'i'  # Si estamos en modo inserción, retornar un valor cacheado
-#     return get(b:, 'cached_fold_' . lnum, 0)
-#   endif
-#   var Ntcodeblock = (x) => synIDattr(synID(x, 1, 1), 'name') !=# 'OrgCodeBlock'
-#   var line = getline(v:lnum)
-#   var lnum_end = -10
-#   var nextline = getline(v:lnum + 1)
-#   if line =~# '^\s*:PROPERTIES:$'
-#     return "a7"
-#   elseif line =~# '^\s*:END:$'
-#     return 's7'
-#   elseif line =~# "#+BEGIN_"
-#     return "a7"
-#   elseif line =~# "#+END_"
-#     return "s7"
-#   elseif line =~# " {{{"
-#     return "a7"
-#   elseif line =~# " }}}"
-#     return "s7"
-#   endif
-#   if line =~# '^\*\+ ' && Ntcodeblock(v:lnum)
-#     return ">" .. match(line, ' ')
-#   endif
-#   if (line =~ '^.\+$') && (nextline =~ '^=\+$') && Ntcodeblock(v:lnum + 1)
-#     return ">1"
-#   endif 
-#   if (line =~ '^.\+$') && (nextline =~ '^-\+$') && Ntcodeblock(v:lnum + 1)
-#     return ">2"
-#   endif
-#   return "="
-# enddef
 
 def OrgFold9s(lnum: number): string
   # Cachear folds durante inserción o si ya está calculado
