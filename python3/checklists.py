@@ -53,22 +53,59 @@ def checklist_toggle_status():
 
 def checklist_update_status():
     # Check the position of the previous and next blanklines
-    import functions_main as fm
     import vim
     import re
 
-    actual_cursor_pos = [vim.Function('line')('.'), vim.Function('col')('.')]
     prev_blankline = vim.Function('search')('^\\s$', 'nWb')
     next_blankline = vim.Function('search')('^\\s$', 'nW')
 
     # Check the position of the previous and next headers
     prev_header = vim.Function('search')('^\\*', 'nWb')
     next_header = vim.Function('search')('^\\*', 'nW')
+
+    # Check if blankline or header is previous
+
+    if prev_header > prev_blankline:
+        start_search = prev_header - 1
+    elif prev_header < prev_blankline:
+        start_search = prev_blankline - 1
+    else:
+        start_search = 1
+
+    # Check if blankline or header is next
+
+    if next_header < next_blankline:
+        end_search = next_header
+    elif next_header > next_blankline:
+        end_search = next_blankline
+    else:
+        end_search = vim.Function('line')('$')
+
+    range_lines = vim.current.buffer[start_search:end_search]
+    print(range_lines)
+
     # Generate a list with the line number and content of every checkbox
-    i = 0
+
+    i = start_search
+    checklist_list = []
+    end_total = vim.Function('line')('$')
+    while i < end_total:
+        if re.search(r"^\s*- \["):
+            indent = vim.current.buffer[i] - vim.current.buffer[i].lstrip()
+            list_add = [i, indent, vim.current.buffer[i]]
+            checklist_list.append(list_add)
+            i += 1
+            continue
+        elif i == end_search:
+            break
+        else:
+            i += 1
+            continue
+
+    print(checklist_list)
+
     # Count main and childs
     # Loop to substitute the positions
-    pass
 
 
 def test_strings():
