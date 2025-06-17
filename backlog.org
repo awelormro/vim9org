@@ -1,0 +1,295 @@
+* Vim9org story cases
+  - User generates a document organize tasks
+  - User generates an academic document
+  - Export to latex, docx, odt, html
+  - Generate graphs from data
+  - Use tables as spreadsheet
+  - Calculate constants and generate calculations.
+  - Imports data from csv and tsv
+  - Exports tables as Excel, csv or tsv
+  - Uses as a checksum
+  - Generates code and documentation from c, lua, tex, python, ada, scala, c#,
+    etc.
+  - Import data from other formats.
+  - Generate simple documents.
+* Vim9org backlog
+** Tags
+    - [ ] buffer for tags
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] load tags from files
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] load tags from general config
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] generate search for tags
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] generate excludant tags
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] all in file tags
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] use :noexport: and :noselect:
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] make tags recursive and non recursive
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+** Checklists
+    - [ ] Add lines with checklist
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] automatic fill
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] count and delimit tasks
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] check percentage
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] check pending
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+** Export
+    - [ ] odt
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] html
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] docx
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] pdf
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] pandoc
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] emacs
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+** Tables
+    - [ ] Convert from tbl to orgtable
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] Convert from orgtable to tbl
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] Convert csv to orgtable
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] Convert tsv to orgtable
+      - [ ] lua
+      - [ ] vimscript
+      - [ ] vim9script
+      - [ ] python
+    - [ ] 
+    - [ ] 
+      - [ ] 
+** Spreadsheet
+  - [ ] Read logic formulas
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Create parser 
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Read math formulas
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Add formulas
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Generate constants
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Transpose
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+** Effort
+   - [ ] Start effort in file
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Close and update effort in files
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+** Agenda
+   - [ ] Read agenda files
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Use external grep
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Visualize calendar and dates
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Order by date and/or relevance
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+  - [ ] Update files of agenda
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+** Timetables
+   - [ ] Generate timetables
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+   - [ ] Chceck functions of timetables
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+   - [ ] Verify status and uploading
+    - [ ] lua
+    - [ ] vimscript
+    - [ ] vim9script
+    - [ ] python
+   - [ ] 
+   - [ ] 
+** Calendar
+   - [ ] Generate dates and criteria
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Go to file in journal
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Add file in buffer
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Generate buffer calendar
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+** Dates
+   - [ ] Generate and update dates
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Sum dates and hours for operations
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+** Narrow
+   - [ ] paragraph
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Section
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Block
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+
+** Index
+   - [ ] Generate index for file
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+   - [ ] Generate index for blocks and indented
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python
+** Codeblocks
+   - [ ] 
+   - [ ] 
+   - [ ] 
+   - [ ] 
+   - [ ] 
+* Week 1 sprint
+  Language: python
+  - [ ] Simple buffer for tags
+  - [ ] Simple narrow
+  - [ ] header narrow
+  - [ ] tags read for file

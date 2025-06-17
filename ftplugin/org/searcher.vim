@@ -30,12 +30,12 @@ command -buffer OrgCheckBoxToggle   chck.ToggleChecklist()
 command -buffer OrgTagsHeader       tgs.Org_Header_Extractor()
 # }}}
 # Plug mapping creations {{{
-map <Plug>(OrgFindPrevCite) :OrgSearchPrevCite<CR>:echo <CR>
-map <Plug>(OrgFindPrevHead) :OrgSearchPrevHeader<CR>:echo <CR>
-map <Plug>(OrgFindPrevLink) :OrgSearchPrevLink<CR>:echo <CR>
-map <Plug>(OrgFindNextCite) :OrgSearchNextCite<CR>:echo <CR>
-map <Plug>(OrgFindNextHead) :OrgSearchNextHeader<CR>:echo <CR>
-map <Plug>(OrgFindNextLink) :OrgSearchNextLink<CR>:echo <CR>
+map <silent> <Plug>(OrgFindPrevCite) :OrgSearchPrevCite<CR>:echo <CR>
+map <silent> <Plug>(OrgFindPrevHead) :OrgSearchPrevHeader<CR>:echo <CR>
+map <silent> <Plug>(OrgFindPrevLink) :OrgSearchPrevLink<CR>:echo <CR>
+map <silent> <Plug>(OrgFindNextCite) :OrgSearchNextCite<CR>:echo <CR>
+map <silent> <Plug>(OrgFindNextHead) :OrgSearchNextHeader<CR>:echo <CR>
+map <silent> <Plug>(OrgFindNextLink) :OrgSearchNextLink<CR>:echo <CR>
 
 # }}}
 # mapping creations {{{
