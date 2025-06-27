@@ -90,19 +90,19 @@ def CalculateRealFold(lnum: number): string
 enddef
 
 # Activar/desactivar caché automáticamente
-augroup OrgFoldCache
-  autocmd!
-  autocmd InsertEnter *.org {
-    b:fold_cache_enabled = 1
-    b:fold_cache = {}  # Resetear caché al entrar en inserción
-  }
-  autocmd InsertLeave *.org {
-    b:fold_cache_enabled = 0
-    b:fold_cache = {}  # Limpiar caché al salir
-    setlocal foldmethod=expr  # Forzar actualización
-  }
-augroup END
+# augroup OrgFoldCache
+#   autocmd!
+#   autocmd InsertEnter *.org {
+#     b:fold_cache_enabled = 1
+#     b:fold_cache = {}  # Resetear caché al entrar en inserción
+#   }
+#   autocmd InsertLeave *.org {
+#     b:fold_cache_enabled = 0
+#     b:fold_cache = {}  # Limpiar caché al salir
+#     setlocal foldmethod=expr  # Forzar actualización
+#   }
+# augroup END
 
-setlocal foldmethod=expr
-setlocal foldexpr=OrgFold9s(v:lnum)
+# setlocal foldmethod=expr
+# setlocal foldexpr=OrgFold9s(v:lnum)
 # }}}

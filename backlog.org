@@ -289,7 +289,14 @@
    - [ ] 
 * Week 1 sprint
   Language: python
+  - [ ] Create architecture for all languages
   - [ ] Simple buffer for tags
   - [ ] Simple narrow
   - [ ] header narrow
   - [ ] tags read for file
+  - [ ] Start lexer in all languages
+  - [ ] Folding function start
+     - [ ] lua
+     - [ ] vimscript
+     - [ ] vim9script
+     - [ ] python

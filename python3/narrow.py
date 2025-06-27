@@ -1,29 +1,73 @@
-import vim
-import re
+def narrow_paragraph():
+    import vim
+    up_part = vim.Function('search')("^\\s*$", 'nWb')
+    down_part = vim.Function('search')("^\\s*$", 'nW')
+    if up_part == 0:
+        up_part = 1
+    if down_part == 0:
+        down_part = vim.Function('line')('$')
+    narrow_buffer(up_part, down_part)
 
 
-def narrow_buffer(start, end):
+def narrow_tree():
+    import vim
+    import re
+    up_part = vim.Function('search')("^\\*" 'nWb')
+    if up_part == 0:
+        return
+    header_line = vim.current.buffer[up_part - 1]
+    if re.search(r"^\** ", header_line):
+        count_asterisks = header_line.index(" ") * "\\*"
+    else:
+        return
+    down_part = vim.Function('search')("^"+count_asterisks+' ', 'nW')
+    if down_part == 0:
+        down_part = vim.Function('line')('$')
+    narrow_buffer(up_part, down_part)
+
+
+def narrow_buffer(start, ends):
+    import vim
     if hasattr(vim.vars, 'nrrow_start'):
-        if vim.vars['nrrow_start'] is True:
+        if vim.vars['nrrow_start'] == 1:
             error_string = 'Currently a narrowed buffer is started, finish'
-            vim.command('echoerr "' . error_string .'"')
-    content_narrow = vim.current.buffer[start - 1: end - 1]
+            vim.command('echoerr "' + error_string + '"')
+    content_narrow = vim.current.buffer[start - 1: ends]
+    vim.vars['nrrow_start'] = 1
+    print(content_narrow)
     buffer_add = vim.Function("expand")('%')
-    curr_filetype = vim.eval('&filetype')
-    vim.command(':enew')
+    # vim.command(':vsplit')
+    vim.command(':e nnrow.orgnrrow')
+    vim.command(':1,$delete')
     string_setlocal = 'setlocal filetype=org.orgnrrow'
-    vim.command("execute \"" . string_setlocal . "\"")
+    vim.command("execute \"" + string_setlocal + "\"")
+    # vim.command('setlocal nowrite nobackup')
     vim.current.buffer.vars['start'] = start
-    vim.current.buffer.vars['end'] = end
-    vim.current.buffer.vars['']
-    vim.command('append')('0', content_narrow)
-    vim.command('cursor')(1, 1)
+    vim.current.buffer.vars['end'] = ends
+    vim.current.buffer.vars['buffer_substitute'] = buffer_add
+    vim.Function('append')('0', content_narrow)
+    vim.command(':$delete')
+    vim.Function('cursor')(1, 1)
+    command_1 = 'command! -buffer OrgNarrowQuit py3 narrow.narrow_close()'
+    command_2 = 'nnoremap <buffer><silent> q :OrgNarrowQuit<CR>'
+    command_3 = 'inoremap <buffer><silent> <C-q> <C-o>:OrgNarrowQuit<CR>'
+    vim.command(command_1)
+    vim.command(command_2)
+    vim.command(command_3)
 
 
 def narrow_close():
+    import vim
+    import re
     content_file = vim.current.buffer[:]
     if len(content_file) == 1 and re.eval(r"^\s*$"):
+        vim.command(':bw!')
         return
     start_replace = vim.current.buffer.vars['start']
     end_replace = vim.current.buffer.vars['end']
-    replace_buffer = vim.current.buffer.vars['buffer_replace_name']
+    replace_buffer = vim.current.buffer.vars['buffer_substitute']
+    vim.command(':bw!')
+    vim.command('b ' + replace_buffer.decode('utf-8'))
+    vim.command(':'+str(start_replace)+','+str(end_replace)+'delete')
+    vim.Function('append')(start_replace - 1, content_file)
+    vim.vars['nrrow_start'] = 0

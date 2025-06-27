@@ -1,8 +1,24 @@
 def PyindentOrg():
     import vim
-    mode = vim.Function("mode")
-    exists = vim.Function("exists")
-    curr_line = vim.vvars['lnum']
-    print(curr_line)
-    if mode() == b'i' and exists('b:fold_cache_enabled') and vim.vars['']:
-        vim.current.buffer(curr_line)
+    import re
+    lnum = vim.vvars['lnum']
+    pnonblank = vim.Function('prevnonblank')(lnum - 1)
+    if pnonblank == 0:
+        return 0
+
+    pline = vim.current.buffer[pnonblank - 1]
+    level = vim.Function('indent')(pnonblank)
+
+    if re.search(r"^\*{1,6} ", pline):
+        return pline.index(' ') + 1
+
+    elif re.search(r"^\s*-", pline):
+        return level + 2
+    elif re.search(r"^\s*\d*[\.\)]", pline):
+        return pline.index(' ') + 1
+
+    elif re.search(r"^\s*[+\*] ", pline):
+        return level + 2
+
+    # return len(pline) - len(pline.lstrip())
+    return level
