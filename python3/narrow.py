@@ -1,3 +1,16 @@
+def narrow_generate():
+    import vim
+    vim.command('py3 import narrow')
+    vim.command('command! -buffer -range OrgNarrowSection py3 narrow.narrow_buffer(<line1>, <line2>)')
+    vim.command('command! -buffer OrgNarrowParagraph py3 narrow.narrow_paragraph()')
+    vim.command('command! -buffer OrgNarrowTree py3 narrow.narrow_tree()')
+    vim.command('command! -buffer OrgNarrowVisible py3 narrow.narrow_buffer(line("w0"), line("w$")')
+    vim.command('nnoremap <buffer><silent> <leader>ons :OrgNarrowSection<CR>')
+    vim.command('nnoremap <buffer><silent> <leader>onp :OrgNarrowParagraph<CR>')
+    vim.command('nnoremap <buffer><silent> <leader>onv :OrgNarrowvisible<CR>')
+    vim.command('vnoremap <buffer><silent> <leader>ons :OrgNarrowSection<CR>')
+
+
 def narrow_paragraph():
     import vim
     up_part = vim.Function('search')("^\\s*$", 'nWb')
@@ -12,18 +25,21 @@ def narrow_paragraph():
 def narrow_tree():
     import vim
     import re
-    up_part = vim.Function('search')("^\\*" 'nWb')
+    up_part = vim.Function('search')("^\\*", 'nWb')
+    print('searched_pos in ' + str(up_part))
     if up_part == 0:
         return
+    print('header aviable')
     header_line = vim.current.buffer[up_part - 1]
     if re.search(r"^\** ", header_line):
         count_asterisks = header_line.index(" ") * "\\*"
+        print('valid header')
     else:
         return
     down_part = vim.Function('search')("^"+count_asterisks+' ', 'nW')
     if down_part == 0:
         down_part = vim.Function('line')('$')
-    narrow_buffer(up_part, down_part)
+    narrow_buffer(up_part, down_part - 1)
 
 
 def narrow_buffer(start, ends):

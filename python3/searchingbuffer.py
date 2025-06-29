@@ -17,8 +17,7 @@ def Search_Link_Up():
 
 def Search_Link_Down():
     import vim
-    srch = vim.Function('search')
-    srch('[[', 'b')
+    vim.Function('search')('[[')
 
 
 def Search_Header_Up():
@@ -31,3 +30,24 @@ def Search_Header_Down():
     import vim
     srch = vim.Function('search')
     srch('^*', 'W')
+
+
+def search_starter():
+    import vim
+    commnds = [
+               'OrgSearchLinkPrev py3 searchingbuffer.Search_Link_Up()',
+               'OrgSearchLinkNext py3 searchingbuffer.Search_Link_Down()',
+               'OrgSearchHeadPrev py3 searchingbuffer.Search_Header_Up()',
+               'OrgSearchHeadNext py3 searchingbuffer.Search_Header_Down()'
+            ]
+    mppings = [
+            '<leader>ln :OrgSearchLinkNext<CR>',
+            '<leader>lp :OrgSearchLinkPrev<CR>',
+            '<leader>hn :OrgSearchHeadNext<CR>',
+            '<leader>hp :OrgSearchHeadPrev<CR>',
+            ]
+    vim.command('py3 import searchingbuffer')
+    for commnd in commnds:
+        vim.command('command! -buffer ' + commnd)
+    for mp in mppings:
+        vim.command('nnoremap <buffer><silent> ' + mp)
