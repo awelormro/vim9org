@@ -19,8 +19,6 @@ let b:org_started = 1
 py3 import startorg
 py3 startorg.start_org()
 
-setlocal foldmethod=expr
-setlocal foldexpr=OrgPyFold()
 
 function! OrgPyFold() abort
   py3 import pyfold
@@ -34,3 +32,6 @@ function! OrgPyIndent() abort
 endfunction
 
 setlocal indentexpr=OrgPyIndent()
+
+setlocal foldmethod=expr
+setlocal foldexpr=OrgPyFold()
