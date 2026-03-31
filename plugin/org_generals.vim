@@ -1,4 +1,4 @@
-py3 import timestamps
+" py3 import timestamps
 
 
-command! Orgtest py3 timestamps.timestamp_verify()
+" command! Orgtest py3 timestamps.timestamp_verify()

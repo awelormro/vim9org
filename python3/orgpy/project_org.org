@@ -1,0 +1,317 @@
+* Plugin Orgmode
+
+** Cosas generales
+
+
+#+BEGIN_SRC vim start_v9.vim
+vim9script
+echo 1
+def Cosas()
+  var i = 2
+enddef
+
+
+#+END_SRC
+El plugin orgmode que se pretende crear debe tener un uso general, pero por
+ahora debemos de darle enfoque a los que se cree que pueda darle un valor real,
+ya se empezó con la fase 1, que queda con lo siguiente:
+
+- Fase 1: narrow de código, párrafos, y árboles (títulos y subtítulos)
+  tangle básicos, todo Words y todo priorities, links simples, tangle simple,
+  export simple, checar indent expr, export simple
+- Fase 2: Expansión de tangle a condicionales, links para entrar a archivos
+  externos, todo words expandido, comienzo de, uso de bibtex, uso simple de
+  fórmulas para tablas, expansión del uso de ecuaciones.
+- Fase 3: Generar uso extensivo de bibtex, uso de documentación más enfatizada
+
+** Defaults importantes
+Para el uso bonito de Orgmode, se debe pensar en los defaults importantes que
+se necesitan, destacar entre todos:
+- tw, indent y folding expandibles pero alcanzables
+
+** Modelo Python
+Para poder comenzar a usar ésto, deberemos de generar el encabezado con el
+archivo base, pero debemos tener mucho cuidado para que se genere correctamente
+
+Otro aspecto importante es la manera que se maneja el arreglo de las cosas, por
+decir una cosa, 
+
+*** Folding
+
+El folding en python sí que va a ser un pedo, pero vemos cómo lo vamos
+solucionando, se supone que quedaría algo así el inicio:
+
+La base del modelo en ftplugin base va con lo siguiente:
+ 
+#+BEGIN_SRC vim useless.vim
+function OrgFoldExpr()
+    let l:depth = match(getline(v:lnum), '\(^\*\+\)\@<=\( .*$\)\@=')
+    if l:depth > 0 && synIDattr(synID(v:lnum, 1, 1), 'name') =~# '\m^orgHeadline'
+        return ">" . l:depth
+    endif
+    return "="
+endfunction
+
+if has("folding") && get(g:, 'org_folding', 0)
+    setl foldexpr=OrgFoldExpr()
+    setl foldmethod=expr
+    let b:undo_ftplugin .= "|setl foldexpr< foldmethod<"
+endif
+
+
+#+END_SRC
+
+Se empieza con una función simple que va a generar el apoyo del folding
+
+#+BEGIN_SRC python :tangle folding.py
+
+
+def folding_py3():
+    import vim
+    import re
+    line_folding = vim.vvars['lnum']
+    depth_line = vim.Function('getline')(line_folding).decode('utf-8')
+    mtch = re.match(r'^(\*+)\s', depth_line)
+    if mtch:
+        depth = len(mtch.group(1))
+        return f'>{depth}'
+    mtch = re.match(r'^\s*#\+[Bb][Ee][Gg][Ii][Nn]_', depth_line)
+    if mtch:
+        return 'a1'
+    mtch = re.match(r'^\s*#\+[Ee][Nn][Dd]_', depth_line)
+    if mtch:
+        return 's1'
+    mtch = re.match(r'.*{{{$', depth_line)
+    if mtch:
+        return 'a1'
+    mtch = re.match(r'.*}}}\s*$', depth_line)
+    if mtch:
+        return 's1'
+    return '='
+
+
+#+END_SRC
+
+*** TODO Tangle y Narrow
+Tangle y narrow son dos de las capacidades que hacen que orgmode sea tan
+potente, para poder sacarles todo el provecho a lo que se requiere 
+
+**** TODO Tangle
+
+Tangle es la capacidad de exportar desde uno o más de los elementos encerrados
+mediante =#+BEGIN_SRC= y =#+END_SRC= que tengan indicados los elementos que se
+puedan encerrar, por lo que es necesario empezar a afinarlo, tengo una versión
+simple de poder acceder pero lo estamos afinando. Por lo que es necesario ir
+detallando lo que hace.
+
+***** TODO Funciones básicas
+
+Hay ciertas funciones que nos van a servir para poder abordar
+
+***** TODO Lógica del Tangle para un solo archivo
+La función principal es la siguiente:
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def tangle_block_full() -> None:
+    border_up = '^\\s*#+[Bb][Ee][Gg][Ii][Nn]_[Ss][Rr][Cc]'
+    border_down = '^\\s*#+[Ee][Nn][Dd]_[Ss][Rr][Cc]'
+    borders = verify_borders(border_up, border_down)
+    if borders == -1:
+        return
+
+
+#+END_SRC
+
++ Detecta si está en medio de los elementos que se pusieron =#+BEGIN_SRC= y 
+  =#+END_SRC=
+
++ Luego, detectar si no están en medio los elementos que se quieran dar
+  conflicto (se busca que no haya un =#+BEGIN_SRC= antes del =#+END_SRC= y
+  justo lo mismo con que no exista un =#+END_SRC= antes del =#+BEGIN_SRC=, si
+  éso pasa, se termina.
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def verify_borders(border_up: str, border_down: str) -> list:
+    import vim
+    curr_pos = vim.current.window.cursor
+    search_border_up = vim.Function('search')(border_up, 'nbW')
+    verifier_up = vim.Function('search')(border_down, 'nbW')
+    if verifier_up > search_border_up:
+        return [-1, -1]
+    search_border_down = vim.Function('search')(border_down, 'nW')
+    verifier_down = vim.Function('search')(border_up, 'nW')
+    if verifier_down > search_border_down:
+        return [-1, -1]
+    return [border_up, border_down]
+
+
+#+END_SRC
+
++ Si no pasa lo que se dijo, se lee toda la sección del buffer, se mete a
+  enlazar 
+
++ Se comienza con el verificar la dirección del archivo.
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def obtain_file_path():
+    import vim
+    curr_dir = vim.Function('getcwd')()
+    file_dir = vim.Function('expand')('%:h')
+    if curr_dir != file_dir:
+        return file_dir
+    return curr_dir
+
+
+#+END_SRC
+
+**** TODO Narrow
+Narrowing es la capacidad de tomar un tramo del archivo que se está escribiendo
+y ponerlo en un buffer aislado independiente
+
+*** TODO Generación del export
+
+Para el export de las cosas, es necesario pasar el string y poder
+
+
+#+BEGIN_SRC python  :tangle org_exporting.py
+import vim
+import re
+
+
+def export_basic(export_kind: str, exporter: str) -> None:
+    current_path = vim.Function('getcwd')()
+    path_file = vim.Function('expand')('%:h')
+    if export_kind == 'emacs':
+        export_emacs(export_kind, current_path, path_file)
+        return
+
+    if export_kind == 'pandoc':
+        export_pandoc(export_kind, current_path, path_file)
+        return
+
+
+#+END_SRC
+
+Después de generar las posiciones generales, se empieza a separar, se da
+la opción del sistema de pandoc, emacs o nativo, cada cosa se hace por su 
+propia versión.
+
+No olvidar éste tramo de la documentación de vim para expand, que quedaría algo
+como lo siguiente, éstos se deben agregar cada uno con dos puntos justo después
+del modificador:
+
+Modifiers:
+- :p expand to full path
+- :h head (last path component removed)
+- :t tail (last path component only)
+- :r root (one extension removed)
+- :e extension only
+
+
+Para el de pandoc quedaría algo así: 
+
+#+BEGIN_SRC python  :tangle org_exporting.py
+def pandoc_export(output_format: str, custom_settings: str) -> None:
+    import vim
+    path_export = vim.Function('expand')('%:r').decode('utf-8')
+    command_export = 'pandoc % -o ' + path_export + 
+    vim.command(command_export)
+#+END_SRC
+
+*** Todo args
+
+Para poder generar el código de los Todo keywords, la función debe de cumplir con
+ciertos parámetros que se deben cumplir, 
+- Tener la lista de las keywords 
+- Generar la capacidad de hacer toggle entre ellos
+- 
+La primer fase del todo_keywords será en torno a tener las palabras base TODO, 
+con DOING y DONE, pero será conveniente partirlo en las fases que es:
+
+- Función general:
+
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+def toggle_todo(fwd: bool) -> None:
+    line_generation: int = todo_line_verifier()
+    if line_generation == -1:
+        return
+    verify_index: bool
+    string_splitted: list
+    string_rebuilt: str
+#+END_SRC
+
+- Verificar la posición 
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+def todo_line_verifier() -> int:
+    import vim
+    line_number = vim.Function('search')('^\\*', 'nbW')
+    return line_number
+#+END_SRC
+
+- Extraer el contenido
+
+- Generar la variable de todo en caso que no exista: 
+#+BEGIN_SRC python :tangle todo_toggle.py
+def generate_variables_todo():
+    import vim
+    if not 'org_todo_kw' in vim.vars:
+        vim.vars['org_todo_kw'] = [
+                'TODO', 'DOING', 'DONE'
+                ]
+#+END_SRC
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+
+def toggle_todo(fwd: bool) -> None:
+    import vim
+    header_pos = vim.Function('search')('^\\*', 'nWb')
+
+    if header_pos == -1:
+        return
+
+    header = vim.current.buffer[header_pos - 1]
+    head_splitted = header.split()
+
+    if len(head_splitted) < 2:
+        return
+
+    if 'org_todo_keywords' not in vim.vars:
+        vim.vars['org_todo_keywords'] = [
+                'TODO', 'DOING', 'DONE'
+                ]
+    move = 1 if fwd else -1
+    curr_state = bytes(head_splitted[1], 'utf-8')
+    todo_keywords = list(vim.vars['org_todo_keywords'])
+    if curr_state not in todo_keywords:
+        if fwd:
+            head_splitted.insert(1, str(todo_keywords[0]))
+        else:
+            head_splitted.insert(1, str(todo_keywords[-1]))
+    else:
+        pos_todo = todo_keywords.index(curr_state)
+        head_splitted.pop(1)
+        head_splitted.insert(1, str(todo_keywords[pos_todo + move]))
+        # head_splitted[1] = todo_keywords[pos_todo + move].decode('utf-8')
+    print(head_splitted)
+    new_head = head_splitted[0]
+    head_splitted[1] = head_splitted[1][2:-1]
+    new_head_experiment = ' '.join(head_splitted)
+    i = 1
+    len_head = len(new_head)
+    while i < len_head:
+        new_head = new_head + ' ' + head_splitted[i]
+        i += 1
+    vim.current.buffer[header_pos - 1] = new_head_experiment
+    print(new_head_experiment)
+
+
+#+END_SRC
+
+Luego de las piezas, se empieza con lo demás
+
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+
+#+END_SRC

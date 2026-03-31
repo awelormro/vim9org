@@ -1,0 +1,332 @@
+* TODO Tangle
+
+Tangle es la capacidad de exportar desde uno o más de los elementos encerrados
+mediante =#+BEGIN_SRC= y =#+END_SRC= que tengan indicados los elementos que se
+puedan encerrar, por lo que es necesario empezar a afinarlo, tengo una versión
+simple de poder acceder pero lo estamos afinando. Por lo que es necesario ir
+detallando lo que hace.
+
+** TODO Funciones básicas
+
+Hay ciertas funciones que nos van a servir para poder abordar
+
+** TODO Lógica del Tangle para un solo bloque
+La función principal es la siguiente:
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def tangle_block_full() -> None:
+    border_up = '^\\s*#+[Bb][Ee][Gg][Ii][Nn]_[Ss][Rr][Cc]'
+    border_down = '^\\s*#+[Ee][Nn][Dd]_[Ss][Rr][Cc]'
+    borders = verify_borders(border_up, border_down)
+    if borders == -1:
+        return
+
+
+#+END_SRC
+
++ Detecta si está en medio de los elementos que se pusieron =#+BEGIN_SRC= y 
+  =#+END_SRC=.
+  Luego, detectar si no están en medio los elementos que se quieran dar
+  conflicto (se busca que no haya un =#+BEGIN_SRC= antes del =#+END_SRC= y
+  justo lo mismo con que no exista un =#+END_SRC= antes del =#+BEGIN_SRC=, si
+  éso pasa, se termina.
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def verify_borders(border_up: str, border_down: str) -> list:
+    import vim
+    curr_pos = vim.current.window.cursor
+    search_border_up = vim.Function('search')(border_up, 'nbW')
+    if search_border_up == -1:
+        return [-1, -1]
+    verifier_up = vim.Function('search')(border_down, 'nbW')
+    if verifier_up > search_border_up:
+        return [-1, -1]
+    search_border_down = vim.Function('search')(border_down, 'nW')
+    if search_border_down == -1:
+        return [-1, -1]
+    verifier_down = vim.Function('search')(border_up, 'nW')
+    if verifier_down < search_border_down:
+        return [-1, -1]
+    return [border_up, border_down]
+
+
+#+END_SRC
+
++ Se verifica si existen los elementos de tangle dentro del header (más de 4
+  elementos al momento de generar el split)
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def verify_tangle_data(data) -> list:
+    data_splitted = data.split()
+    if len(data_splitted) < 4:
+        print('not enough data to tangle the current block')
+        print('remember, the tangle instructions must be after the syntax declaration')
+        return []
+    if ':tangle' not in data_splitted:
+        print('tangle not declared, return')
+        return []
+    if data_splitted[2] == ':tangle':
+        return data_splitted
+
+
+#+END_SRC
+
++ Si no existe conflicto, se obtiene la información del buffer en dicha sección:
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def obtain_lines_in_block(params: list) -> list:
+    import vim
+    return vim.current.buffer[params[0]: params[1]]
+
+
+#+END_SRC
+
++ Se comienza con el verificar la dirección del archivo.
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def obtain_file_path():
+    import vim
+    curr_dir = vim.Function('getcwd')()
+    file_dir = vim.Function('expand')('%:h')
+    if curr_dir != file_dir:
+        return file_dir
+    return curr_dir
+
+
+#+END_SRC
+
++ Se genera la capacidad de escribir el buffer, recordando que todo está en
+  bits para evitar conflictos
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def write_file(path, fname, content):
+    import vim
+    vim.Function('writefile')(content, path + '/' + fname)
+    print('file succesfully tangled in ' + path + '/' + fname )
+
+
+#+END_SRC
+
+
+** TODO Tangle para todo el archivo
+- Para todo el archivo, es necesario verificar todas las líneas de
+  =#+BEGIN_SRC= y =#+END_SRC= que existen, en todo el buffer, recordando que la
+  regla es mantener la esencia de un solo sistema, pero con la capacidad de
+  generar múltiples archivos, por lo que es necesario dividir muy bien las
+  tareas
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def tangle_full_file():
+    pos_tangle_all = search_borders_src()
+    if pos_tangle_all == [[],[]]:
+        return
+    headers_work = obtain_all_headers(pos_tangle_all)
+
+#+END_SRC
+
+Se comienza con un barrido de todo el archivo
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def search_borders_src():
+    import vim
+    import re
+    border_up = re.compile(r'^\s*#\+[Bb][Ee][Gg][Ii][Nn]_[Ss][Rr][Cc]\b')
+    border_down = re.compile(r'^\s*#\+[Ee][Nn][Dd]_[Ss][Rr][Cc]\b')
+    full_buffer = vim.current.buffer
+    i = 0
+    open_src = []
+    close_src = []
+    len_buffer = len(vim.current.buffer)
+    while i < len_buffer:
+        if border_up.search(full_buffer[i]):
+            open_src.append(i)
+        if border_down.search(full_buffer[i]):
+            close_src.append(i)
+        i += 1
+    if len(open_src) != len(close_src):
+        print('not correct src generated')
+        return [[], []]
+    return [open_src, close_src]
+
+
+#+END_SRC
+
+Luego, se extraen todos y cada uno de los headers y se verifican sus bloques,
+se eliminarán aquellos que no contengan las características para poder hacer
+tangle:
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def obtain_all_headers(elems: list):
+    # LLegan números, hay que transformarlos
+    # Salida: Lista de [[inicio, fin], [split_línea_begin_src]]
+    import vim
+    import re
+    extraction_list = []
+    len_elems = len(elems)
+    splitted_list = []
+    i = 0
+    while i < len_elems:
+        line_begin = vim.current.buffer[elems[0][i]]
+        split_line = line_begin.split()
+        if len(split_line) >= 4 and ':tangle' in split_line:
+            split_props = [ elems[i][0], elems[i][1], split_line ]
+            extraction_list.append(split_props)
+        i += 1
+    return splitted_list
+
+
+#+END_SRC
+
+Luego de tener las líneas, se organizan los elementos y primero se obtienen las
+líneas para hacer tangle
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def generate_blocks(elems: list):
+    # Llega: Lista de [[inicio, fin], [split_línea_begin_src]]
+    # Sale: [[nombre de archivo, [lista de líneas] ]]
+    i = 0
+    len_elems = len(elems)
+    list_blocks = []
+    while i < len_elems:
+        pos_tangle_file = elems[i][1].index(':tangle')
+        if pos_tangle_file == len(elems[i][1]) - 1:
+            i += 1
+            continue
+        if elems[i][1][pos_tangle_file + 1] == 'yes':
+            name_file = verify_name(elems[i][1])
+        elif (elems[i][1][pos_tangle_file + 1][0] == '"' and
+              elems[i][1][pos_tangle_file + 1][1] == '"'):
+            name_file = elems[i][1][pos_tangle_file + 1][1:-2]
+
+        elif (elems[i][1][pos_tangle_file + 1][0] == '"' and
+              elems[i][1][pos_tangle_file + 1][1] == '"'):
+            name_file = elems[i][1][pos_tangle_file + 1][1:-2]
+        else:
+            name_file = elems[i][1][pos_tangle_file + 1]
+        lines_block = obtain_lines_code(elems[i][0])
+        info_join = [name_file, lines_block]
+        list_blocks.append(info_join)
+        i += 1
+    return list_blocks
+
+
+def obtain_lines_code(begin, end):
+    import vim
+    return vim.current.buffer[begin + 1:end - 1]
+
+
+def verify_name(list_elems: list) -> None:
+    import vim
+    bufname = vim.Function('expand')('%:r')
+    ftype = list_elems[1]
+    return bufname + '.' + ftype
+
+
+def obtain_syntax(ftype: str):
+    ftypes = {
+            'python': 'py',
+            'cpp': 'cpp',
+            'haskell': 'hs',
+            'c': 'c',
+            'latex': 'tex',
+            'html': 'html',
+            'java': 'java',
+            'markdown': 'md',
+            'javascript': 'js',
+            'vim': 'vim',
+            'lisp': 'lisp',
+            'rust': 'rst',
+            'go': 'go',
+            'plantuml': 'puml',
+            'tikz': 'tex',
+            'zig': 'zig',
+            'json': 'json',
+            'toml': 'toml',
+            'yaml': 'yml',
+            'lua': 'lua',
+            'perl': 'perl',
+            'php': 'php',
+            'cs': 'cs',
+            }
+
+    if ftype not in ftypes:
+        return 'txt'
+    return ftypes[ftype]
+
+
+#+END_SRC
+
+Ya que se tienen en forma de tangle, se ordenan por archivo:
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def generate_lists_tangle(elems: list):
+    # Entra lista de: [[nombre de archivo, [lista de líneas] ]]
+    # Se juntan por nombre de archivo y se expulsa lista de archivos
+    i = 0
+    len_elems = len(elems)
+    list_files = []
+    list_file_names = []
+    while i < len_elems:
+        if elems[i][0] not in list_file_names:
+            list_file_names.append(elems[i][0])
+            add_list = elems[i]
+            list_files.append(add_list)
+        else:
+            pos = list_file_names.index(elems[i][0])
+            add_list = elems[i][1]
+            list_files[pos][1] += add_list
+        i += 1
+    return list_files
+
+
+#+END_SRC
+
+Con archivos listos, se verifican las rutas
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def verify_tangle_names(paths: list):
+    pass
+
+
+#+END_SRC
+
+Con las rutas completas, se procede a escribir los archivos:
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+def write_tangle_files(elems: list) -> None:
+    import vim
+    i = 0
+    len_elems = len(elems)
+    while i < len_elems:
+        vim.Function('writefile')(elems[1], elems[0])
+        i += 1
+
+
+#+END_SRC
+** TODO Tangle para el archivo del bloque
+- Buscar si el bloque actual tiene un src que puede hacer tangle
+
+#+BEGIN_SRC python :tangle tangle_verified.py
+
+#+END_SRC
+* TODO Narrow
+
+Narrowing es la capacidad de tomar un tramo del archivo que se está escribiendo
+y ponerlo en un buffer aislado independiente, puede ser para bloques, para
+párrafos o para árboles enteros, debiendo separar correctamente, generar un
+fifo, meter el comando en dicho fifo y la capacidad de regresar a pegar, dando
+la capacidad de eliminar el archivo en cuanto ya no sea necesario.
+
+** TODO Narrow de bloque
+Para hacer el narrowing de un bloque, es necesario que se detecte primer si se
+está en bordes correctos, usando la función de verify_borders que se escribió
+arriba, se puede comenzar ésa parte:
+
+#+BEGIN_SRC python :tangle tangle_verified
+def narrow_block():
+    borders = verify_borders()
+    pass
+#+END_SRC
+
+** TODO Narrow de párrafo
+** TODO narrow de árbol

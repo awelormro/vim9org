@@ -1,0 +1,55 @@
+* Links En orgmode
+
+Los links son formatos de documento que pueden permitir acceder a una parte
+dentro del documento o fuera de él, además de generar ciertos comandos
+
+** DOING Movimiento de los links
+Los links en orgmode son de las partes principales de lo que se necesita para
+la fase 1, por lo que llevo entendido, se tienen que dar cosas para poder
+moverse [[link]] [[link][Descripción]:
+
+
+#+BEGIN_SRC python links_org.py
+def go_link(fwd: bool) -> None:
+    import vim
+    if not fwd:
+        verifier = vim.Function('col')(',')
+        verifier2 = vim.Function('line')(',')
+        vim.Function('search')('\\[\\[', 'b')
+        ver_col = vim.Function('col')(',')
+        ver_line = vim.Function('line')(',')
+        if verifier == ver_col and verifier2 == ver_line:
+            vim.Function('cursor')(ver_line, ver_col - 2)
+            vim.Function('search')('\\[\\[', 'b')
+    else:
+        vim.Function('search')('\\[\\[')
+
+
+#+END_SRC
+
+
+** DOING Entrar a los links
+Para la parte de abrir los links, debemos ir de lo chico a lo grande, primero
+será analizar los links.
+
+
+#+BEGIN_SRC python :tangle links_org.py
+def verify_is_inside_link() -> None:
+    import vim
+    curr_line = vim.current.line
+
+
+def enter_file() -> None:
+    pass
+
+#+END_SRC
+
+Luego, se necesita verificar la estructura, si el link tiene una terminación
+con extensión 
+
+
+#+BEGIN_SRC python :tangle links_org.py
+
+#+END_SRC
+
+** TODO Generar links

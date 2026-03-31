@@ -1,0 +1,126 @@
+* Todo Words en Orgmode
+
+Las TODO words son cruciales para el entorno que se maneja, porque permiten
+manejar las palabras cruciales de cada entorno, pero debemos de analizar la
+manera en que se van a meter:
+
+- Tener la función principal, extrae la línea y si ésta no existe, cierra para
+  no ejecutar el resto, pero luego se hará split y si el split es solamente el
+  header, igual va a cerrar:
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+def toggle_todo(fwd: bool) -> None:
+    import vim
+    header_pos = vim.Function('search')('^\\*', 'nWb')
+    if header_pos == -1:
+        return
+
+    header = vim.current.buffer[header_pos - 1]
+    head_splitted = header.split()
+    if len(head_splitted) < 2:
+        return
+
+    generate_variables_todo()
+#+END_SRC
+
+- Luego de validar el split, se necesita verificar si existe las todo_keywords
+  entre las variables globales
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+def generate_variables_todo():
+    import vim
+    if not 'org_todo_kw' in vim.vars:
+        vim.vars['org_todo_kw'] = [
+                'TODO', 'DOING', 'DONE'
+                ]
+
+#+END_SRC
+
+
+Ya que se tienen las variables todo, recordar que todo lo que se obtiene de la
+api de vim, recordar que todo llega como bytestring, lo primero será verificar
+si la segunda palabra pertenece al entorno de las variables. 
+#+BEGIN_SRC python :tangle todo_toggle.py
+def verify_if_in_list_bytes(ls, itm):
+    item_conversion = bytes(itm, 'utf-8')
+    if item_conversion in ls:
+        return ls.index(item_conversion)
+    return -1
+#+END_SRC
+
+Luego de tenerla, también hay que verificar mediante la combinación de
+elementos si es que se genera delante o hacia atrás, y si existe o no existe,
+además que hay que verificar si vas hacia adelante, si es el primero o el
+último y cómo va a reaccionar
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+def verify_pos_second_word(header: list) -> None:
+    import vim
+    header_list = vim.vars['org_todo_kw']
+    variables = [0, 0, 0, 0]  # Forward, is_todo first_pos, last_pos
+    if header in header_list:
+        variables[1] = 1
+    if 
+
+
+#+END_SRC
+
+** Proyecto monolito
+Aquí está el primer intento en forma de monolito:
+
+#+BEGIN_SRC python :tangle todo_toggle.py
+
+
+def toggle_todo(fwd: bool) -> None:
+    import vim
+    header_pos = vim.Function('search')('^\\*', 'nWb')
+
+    if header_pos == -1:
+        return
+
+    header = vim.current.buffer[header_pos - 1]
+    head_splitted = header.split()
+
+    if len(head_splitted) < 2:
+        return
+
+    if 'org_todo_keywords' not in vim.vars:
+        vim.vars['org_todo_keywords'] = [
+                'TODO', 'DOING', 'DONE'
+                ]
+    move = 1 if fwd else -1
+    curr_state = bytes(head_splitted[1], 'utf-8')
+    todo_keywords = list(vim.vars['org_todo_keywords'])
+    flag_fix = False
+    if curr_state not in todo_keywords:
+        # DONE
+        if fwd:
+            head_splitted.insert(1, str(todo_keywords[0]))
+        # DONE
+        else:
+            head_splitted.insert(1, str(todo_keywords[-1]))
+    else:
+        pos_todo = todo_keywords.index(curr_state)
+        if fwd and (pos_todo >= (len(todo_keywords) - 1)):
+            head_splitted.pop(1)
+            flag_fix = True
+        elif not fwd and pos_todo == 0:
+            head_splitted.pop(1)
+            flag_fix = True
+        else:
+            head_splitted.pop(1)
+            head_splitted.insert(1, str(todo_keywords[pos_todo + move]))
+    new_head = head_splitted[0]
+    head_splitted[1] = head_splitted[1] if flag_fix else head_splitted[1][2:-1]
+    new_head_experiment = ' '.join(head_splitted)
+    i = 1
+    len_head = len(new_head)
+    while i < len_head:
+        new_head = new_head + ' ' + head_splitted[i]
+        i += 1
+    vim.current.buffer[header_pos - 1] = new_head_experiment
+
+
+
+
+#+END_SRC

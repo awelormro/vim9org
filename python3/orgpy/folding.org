@@ -1,0 +1,3 @@
+* Folding para orgmode en python
+
+Se habla de la lógica y las partes que se van a requerir para generar el fold
