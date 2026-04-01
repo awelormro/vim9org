@@ -61,6 +61,17 @@ syn region orgVerbatimBlock matchgroup=orgVerbatimBlockDelimiter start="\c^\s*#+
 hi def link orgVerbatimBlock orgCode
 hi def link orgVerbatimBlockDelimiter orgVerbatimBlock
 
+" Hyperlinks: {{{1
+syntax match hyperlink	"\[\{2}[^][]*\(\]\[[^][]*\)\?\]\{2}" contains=hyperlinkBracketsLeft,hyperlinkURL,hyperlinkBracketsRight containedin=ALL
+" if (s:conceal_aggressively == 1)
+syntax match hyperlinkBracketsLeft	contained "\[\{2}#\?"     conceal
+" else
+    " syntax match hyperlinkBracketsLeft	contained "\[\{2}"     conceal
+" endif
+syntax match hyperlinkURL				    contained "[^][]*\]\[" conceal
+syntax match hyperlinkBracketsRight	contained "\]\{2}"     conceal
+hi def link hyperlink Underlined
+" }}}
 syntax match  org_verbatim /^\s*>.*/
 syntax match  org_code     /^\s*:.*/
 
