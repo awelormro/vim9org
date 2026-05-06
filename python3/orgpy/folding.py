@@ -2,6 +2,16 @@ import vim
 import re
 
 
+# 
+
+
+def indent_expr_vim9():
+    vb = vim.current.buffer.vars
+    lnum = vim.vvars['lnum']
+    if 'curr_head_level' not in vb:
+        vb['curr_head_level'] = 0
+
+
 def fold_cache_py3():
     vb = vim.current.buffer.vars
     if 'lasttick' not in vb:

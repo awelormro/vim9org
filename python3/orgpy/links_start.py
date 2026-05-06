@@ -12,7 +12,8 @@ CUSTOM_ID_PATTERN = re.compile(r'^:CUSTOM-ID:\s+(.+)$')
 HEADER_PATH = re.compile(r'^\** ')
 vim.vars['external_files_open'] = [
     'docx', 'pdf', 'xls', 'xlsx', 'ppt', 'pptx',
-    'mp3', 'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4a', 'flac', 'wav', 'ogg',
+    'mp3', 'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm',
+    'm4a', 'flac', 'wav', 'ogg',
     'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico', 'tiff', 'tif',
     'zip', 'rar', 'tar', 'gz', 'bz2', '7z', 'xz', 'zst',
     'exe', 'msi', 'appimage', 'deb', 'rpm', 'sh', 'bat', 'cmd',

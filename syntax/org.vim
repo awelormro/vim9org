@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Org
-" Previous Maintainer:  Luca Saccarola <github.e41mv@aleeas.com>
+" Previous Maintainer:  awelormro 
 " Maintainer:   This runtime file is looking for a new maintainer.
 " Last Change:  2025 Aug 05
 "

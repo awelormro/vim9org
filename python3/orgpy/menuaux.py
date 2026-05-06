@@ -15,7 +15,7 @@ def draw_new_menu(values_list: list):
         vim.current.buffer.vars['complete_options'] = list_options
         vim.current.buffer.vars['list_options'] = list_options
     else:
-        vim.current.buffer.append(0,list_options)
+        vim.current.buffer.append(0, list_options)
         vim.current.buffer.vars['complete_options'] = list_options
         vim.current.buffer.vars['list_options'] = list_options[0:10]
     vim.current.buffer.vars['counter'] = 0
@@ -30,10 +30,11 @@ def move_cursor_below():
     else:
         if pos_search == 1:
             if vim.current.buffer.vars['counter'] == 0:
-                if vim.current.buffer.vars == False:
+                if not vim.current.buffer.vars:
                     return
 
 
 def move_cursor_empty():
-    if (len(vim.current.buffer.vars['complete_values']) == len(
-        )
+    if (len(vim.current.buffer.vars['complete_values'])) == len(0):
+        pass
+    pass
